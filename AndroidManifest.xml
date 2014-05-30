@@ -35,7 +35,7 @@
         </activity>
         
         <service
-            android:name="cmps121.quadrant.GPSService"
+            android:name="GPSService"
             android:exported="false"
             android:icon="@drawable/ic_launcher" >
         </service>

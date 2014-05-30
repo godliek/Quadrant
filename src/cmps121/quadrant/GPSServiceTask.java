@@ -21,7 +21,7 @@ import android.util.Log;
 
 public class GPSServiceTask implements Runnable{
 
-	public static final String LOG_TAG = "MyService";
+	public static final String LOG_TAG = "GPSService";
 	private boolean running;
 	private Context context;
 	
@@ -55,9 +55,9 @@ public class GPSServiceTask implements Runnable{
     		
     		public void onLocationChanged(Location location) {
     		    //tv1.setText("Lat " +   location.getLatitude() + " Long " + location.getLongitude());
-    			Log.d("Latitude", "LAT: " + location.getLatitude());
-    			Log.d("Longitude", "LONG: " + location.getLongitude());
-    			Log.d("Elevation", "ELEV: " + location.getAltitude());
+    			Log.d(LOG_TAG, "LAT: " + location.getLatitude());
+    			Log.d(LOG_TAG, "LONG: " + location.getLongitude());
+    			Log.d(LOG_TAG, "ELEV: " + location.getAltitude());
     		}
     		public void onProviderDisabled(String provider) {}
     		public void onProviderEnabled(String provider) {}

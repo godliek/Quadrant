@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     
     // State
     private int activityState;
+    
+    // Notification
+    private static Toast globalToast;
     
     //runs without a timer by reposting this handler at the end of the runnable
     Handler timerHandler = new Handler();
@@ -69,6 +73,11 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         serviceBound = false;
         
         restoreState(savedInstanceState);
+        
+        // Starts the service, so that the service will only stop when explicitly stopped.
+        Intent intent = new Intent(this, GPSService.class);
+        startService(intent);
+    	bindMyService();
     }
     
     @Override
@@ -80,7 +89,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 
     @Override
     protected void onResume() {
-        super.onResume();
+        super.onResume();   
+        if (!serviceBound) {
+	    	bindMyService();
+        }
     }
     
     @Override
@@ -89,7 +101,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         	if (myService != null) {
         		myService.removeResultCallback(this);
         	}
-    		Log.i("MyService", "Unbinding");
+    		Log.i("GPS Service", "Unbinding");
     		unbindService(serviceConnection);
         	serviceBound = false;
 
@@ -101,6 +113,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         		Log.i(LOG_TAG, "Stopped.");
         	}
         }
+        
         super.onPause();
     }
     
@@ -122,13 +135,25 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     
     @Override
     /**
-     * Kills MyService when the app is closed
+     * Kills GPSService when the app closes
      */
 	public void finish() {
+    	// stop the service
+    	if (serviceBound) {
+        	if (myService != null) {
+        		myService.removeResultCallback(this);
+        	}
+    		Log.i("GPSService", "Unbinding");
+    		unbindService(serviceConnection);
+        	serviceBound = false;
+
+        	Log.i(LOG_TAG, "Stopping GPS Service...");
+        	Intent intent = new Intent(this, GPSService.class);
+        	stopService(intent);
+        	Log.i(LOG_TAG, "Stopped  GPS Service.");
+        }
+    	
     	super.finish();
-    	// stop the service when the app is closed
-    	Intent intent = new Intent(this, GPSService.class);
-    	stopService(intent);
     }
 
     @Override
@@ -162,7 +187,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     
     // attempt to bind to MyService
     private void bindMyService() {
-    	Log.i(LOG_TAG, "Starting the service");
     	Intent intent = new Intent(this, GPSService.class);
     	Log.i("LOG_TAG", "Trying to bind");
     	bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -178,7 +202,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		myService = binder.getService();
     		serviceBound = true;
     		// Let's connect the callbacks.
-    		Log.i("MyService", "Bound succeeded, adding the callback");
+    		Log.i("GPS Service", "Bound succeeded, adding the callback");
     		myService.addResultCallback(MainActivity.this);
     	}
     	
@@ -234,54 +258,42 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     public void clickRecord(View v) {
     	int duration = Toast.LENGTH_SHORT;
     	
-    	TextView tv = (TextView) findViewById(R.id.button_record);
+    	Button recordButton = (Button) findViewById(R.id.button_record);
     	
     	// handle the recording state
     	if (activityState == STATE_IDLE) {
     		activityState = STATE_RECORDING;
-    		tv.setText("PAUSE");
+    		recordButton.setBackgroundResource(R.drawable.record_button_pause);
     		// Set timer start time and start the timer handler
     		timerStartTime = System.currentTimeMillis();
             timerHandler.postDelayed(timerRunnable, 0);
+            
+        	showToast("Now Recording");
     	} else if (activityState == STATE_RECORDING) {
     		activityState = STATE_PAUSED;
-    		tv.setText("RESUME");
+    		recordButton.setBackgroundResource(R.drawable.record_button_resume);
     		// Pause the timer
     		timerHandler.removeCallbacks(timerRunnable);
+    		
+        	showToast("Paused");
     	} else if (activityState == STATE_PAUSED) {
     		activityState = STATE_RECORDING;
-    		tv.setText("PAUSE");
+    		recordButton.setBackgroundResource(R.drawable.record_button_pause);
     		// Resume the timer
     		timerStartTime = System.currentTimeMillis();
     		timerHandler.postDelayed(timerRunnable, 0);
+    		
+            // notify resumed
+        	showToast("Resumed");
     	}
-    	
-    	if (serviceBound) { // stop the service
-        	if (myService != null) {
-        		myService.removeResultCallback(this);
-        	}
-    		Log.i("MyService", "Unbinding");
-    		unbindService(serviceConnection);
-        	serviceBound = false;
+    }
+    
+    private void showToast(String msg) {
+    	if (globalToast != null)
+    	    globalToast.cancel();
 
-        	Log.i(LOG_TAG, "Stopping.");
-        	Intent intent = new Intent(this, GPSService.class);
-        	stopService(intent);
-        	Log.i(LOG_TAG, "Stopped.");
-        	
-        	CharSequence text = "GPS Service Stopped!";
-        	Toast toast = Toast.makeText(getApplicationContext(), text, duration);
-        	toast.show();
-        } else { // start the service
-            // Starts the service, so that the service will only stop when explicitly stopped.
-            Intent intent = new Intent(this, GPSService.class);
-            startService(intent);
-        	bindMyService();
-        	
-        	CharSequence text = "GPS Service Started!";
-        	Toast toast = Toast.makeText(getApplicationContext(), text, duration);
-        	toast.show();
-        }
+    	globalToast = Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG);
+    	globalToast.show();
     }
 
 }

@@ -21,20 +21,20 @@ import android.widget.Toast;
 
 
 public class GPSService extends Service {
+	
+    private static final String LOG_TAG = "GPSService";
 
-    private static final String LOG_TAG = "MyService";
-    
     // Handle to notification manager.
     private NotificationManager notificationManager;
     private int ONGOING_NOTIFICATION_ID = 1; // This cannot be 0. So 1 is a good candidate.
-    
+
     // Motion detector thread and runnable.
     private Thread myThread;
     private GPSServiceTask myTask;
-    
+
     // Binder given to clients
     private final IBinder myBinder = new MyBinder();
-    
+
     // Binder class.
     public class MyBinder extends Binder {
     	GPSService getService() {
