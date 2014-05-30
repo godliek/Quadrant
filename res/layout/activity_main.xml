@@ -182,6 +182,7 @@
             android:layout_alignBottom="@+id/button_record"
             android:layout_toRightOf="@+id/button_record"
             android:background="@drawable/button"
+            android:onClick="clickFinish"
             android:text="Finish"
             android:textColor="#ffffffff" />
 

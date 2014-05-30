@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -39,13 +40,15 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     private int activityState;
     
     // Notification
-    private static Toast globalToast;
+    private static Toast toast;
     
-    private double elapsedTime = 0;
+    private long elapsedTime = 0;
     
     //UI Elements
     private TextView elevationTextView, distanceTextView, velocityTextView;
-
+    
+    // Persistent data
+    private SharedPreferences mPrefs;
     
     //runs without a timer by reposting this handler at the end of the runnable
     Handler timerHandler = new Handler();
@@ -79,17 +82,17 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         mUiHandler = new Handler(getMainLooper(), new UiCallback());    
         serviceBound = false;
         
-        restoreState(savedInstanceState);
-        
         elevationTextView = (TextView) findViewById(R.id.textView_elevationValue);
         distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
         velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
-
-        
-        // Starts the service, so that the service will only stop when explicitly stopped.
-        Intent intent = new Intent(this, GPSService.class);
-        startService(intent);
-    	bindMyService();
+    	
+    	// restore persistent data
+    	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
+    	timerStartTime = mPrefs.getLong("timerStartTime", 0);
+    	timerElapsedTime = mPrefs.getLong("timerElapsedTime", 0);
+    	activityState = mPrefs.getInt("activityState", STATE_IDLE);
+    	elapsedTime = mPrefs.getLong("elapsedTime", 0);
+  
     }
     
     @Override
@@ -105,10 +108,18 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         if (!serviceBound) {
 	    	bindMyService();
         }
+        
+        // resume timer and restore GUI
+    	if(activityState == STATE_RECORDING) {
+    		
+    	} else if (activityState == STATE_PAUSED) {
+    		
+    	}
     }
     
     @Override
     protected void onPause() {
+        super.onPause();
         if (serviceBound) {
         	if (myService != null) {
         		myService.removeResultCallback(this);
@@ -126,7 +137,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         	}
         }
         
-        super.onPause();
+        // save persistent data
+        SharedPreferences.Editor ed = mPrefs.edit();
+        ed.putLong("timerStartTime", timerStartTime);
+        ed.putLong("timerElapsedTime", timerElapsedTime);
+        ed.putLong("elapsedTime", elapsedTime);
+        ed.putInt("activityState", activityState);
+        ed.commit();
     }
     
 	@Override
@@ -144,58 +161,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 		}
 		return super.onOptionsItemSelected(item);
 	}
-    
-    @Override
-    /**
-     * Kills GPSService when the app closes
-     */
-	public void finish() {
-    	// stop the service
-    	if (serviceBound) {
-        	if (myService != null) {
-        		myService.removeResultCallback(this);
-        	}
-    		Log.i("GPSService", "Unbinding");
-    		unbindService(serviceConnection);
-        	serviceBound = false;
-
-        	Log.i(LOG_TAG, "Stopping GPS Service...");
-        	Intent intent = new Intent(this, GPSService.class);
-        	stopService(intent);
-        	Log.i(LOG_TAG, "Stopped  GPS Service.");
-        }
-    	
-    	super.finish();
-    }
-
-    @Override
-    /**
-     * Save the activity state.
-     */
-    protected void onSaveInstanceState(Bundle outState) {
-    	outState.putLong("timerStartTime", timerStartTime);
-    	outState.putInt("activityState", activityState);
-    	outState.putLong("timerElapsedTime", activityState);
-    	super.onSaveInstanceState(outState);
-    }
-    
-    /**
-     * Restore the activity state.
-     */
-    private void restoreState(Bundle savedState) {
-    	timerStartTime = 0;
-    	activityState = 0;
-    	timerElapsedTime = 0;
-    	
-    	if (savedState != null) {
-    		timerStartTime = Long.parseLong(savedState.getString("timerStartTime"));
-    		TextView tv = (TextView) findViewById(R.id.textView_timer);
-    		tv.setText(Long.toString(timerStartTime));
-    		activityState = Integer.parseInt(savedState.getString("activityState"));
-    		timerElapsedTime = Long.parseLong(savedState.getString("timerElapsedTime"));
-    	}
-    	
-    }
     
     // attempt to bind to MyService
     private void bindMyService() {
@@ -280,13 +245,17 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     }
     
     public void clickRecord(View v) {
-    	int duration = Toast.LENGTH_SHORT;
-    	
     	Button recordButton = (Button) findViewById(R.id.button_record);
     	
     	// handle the recording state
     	if (activityState == STATE_IDLE) {
     		activityState = STATE_RECORDING;
+    		
+            // Starts the GPS Service, the service stops when Finish is clicked
+            Intent intent = new Intent(this, GPSService.class);
+            startService(intent);
+        	bindMyService();
+    		
     		recordButton.setBackgroundResource(R.drawable.record_button_pause);
     		// Set timer start time and start the timer handler
     		timerStartTime = System.currentTimeMillis();
@@ -317,12 +286,36 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	}
     }
     
+    public void clickFinish(View v) {
+    	
+    	if (activityState != STATE_IDLE) {
+	    	// stop the service
+	    	if (serviceBound) {
+	        	if (myService != null) {
+	        		myService.removeResultCallback(this);
+	        	}
+	    		Log.i("GPSService", "Unbinding");
+	    		unbindService(serviceConnection);
+	        	serviceBound = false;
+	
+	        	Log.i(LOG_TAG, "Stopping GPS Service...");
+	        	Intent intent = new Intent(this, GPSService.class);
+	        	stopService(intent);
+	        	Log.i(LOG_TAG, "Stopped  GPS Service.");
+	        }
+	    	
+	    	showToast("GPS Service stopped");
+    	} else {
+    		showToast("Nothing to finish");
+    	}
+    }
+    
     private void showToast(String msg) {
-    	if (globalToast != null)
-    	    globalToast.cancel();
+    	if (toast != null)
+    	    toast.cancel();
 
-    	globalToast = Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG);
-    	globalToast.show();
+    	toast = Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT);
+    	toast.show();
     }
 
 }
