@@ -120,4 +120,11 @@ public class GPSService extends Service {
     	        getText(R.string.gps_service_running), pendingIntent);
     	startForeground(ONGOING_NOTIFICATION_ID, notification);
     }
+    
+    public void setServiceRunning(boolean b){
+    	if(b)
+    		myTask.startProcessing();
+    	else 
+    		myTask.stopProcessing();
+    }
 }

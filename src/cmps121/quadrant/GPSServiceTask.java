@@ -55,7 +55,6 @@ public class GPSServiceTask implements Runnable{
     	myLocationListener = new LocationListener() {
     		
     		public void onLocationChanged(Location location) {
-    		    //tv1.setText("Lat " +   location.getLatitude() + " Long " + location.getLongitude());
     			Log.d(LOG_TAG, "LAT: " + location.getLatitude());
     			Log.d(LOG_TAG, "LONG: " + location.getLongitude());
     			Log.d(LOG_TAG, "ELEV: " + location.getAltitude());
@@ -115,7 +114,7 @@ public class GPSServiceTask implements Runnable{
     // GPS Service thread mainloop
     public void run() {
         running = true;
-        
+        while(true){
         while (running) {
         	// Sleep a tiny bit.
 			try {
@@ -126,7 +125,9 @@ public class GPSServiceTask implements Runnable{
 
 			// report the acceleration to the UI thread in MainActivity
 			//Log.i(LOG_TAG, "Sending accelerometer readout: " + curAccel);
+			Log.d("running", "service is running");
 			notifyResultCallback();
+        }
         }
     }
 
@@ -167,7 +168,19 @@ public class GPSServiceTask implements Runnable{
     }
     
     public void stopProcessing() {
+    	Log.d("service control", "service paused");
         running = false;
+        //stop requesting updates
+        myLocationManager.removeUpdates(myLocationListener);
+    }
+    public void startProcessing() {
+    	Log.d("service control", "service resumed");
+    	running = true;
+    	//request updates
+    	String best = myLocationManager.getBestProvider(criteria, false);
+		long time = 2000;	//Time interval for GPS polling
+		float minDist = 5;	//Minimum distance to travel between pollings.
+		myLocationManager.requestLocationUpdates(best, time, minDist, myLocationListener);
     }
 
 
@@ -185,6 +198,7 @@ public class GPSServiceTask implements Runnable{
     		if (result != null) {
     			result.elevation = totalElevation * 3.28084;		//elevation in feet
     			result.distance = distanceTraveled * 0.000621371;	//distance in miles
+    			Log.d(LOG_TAG, "" + result.elevation + "\n" + result.distance);
     			for (ResultCallback resultCallback : resultCallbacks) {
     				//Log.i(LOG_TAG, "calling resultCallback for " + result.curAccel);
     				resultCallback.onResultReady(result);

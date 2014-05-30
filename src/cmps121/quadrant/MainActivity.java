@@ -252,7 +252,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             	if (result != null) {
             		//Log.i(LOG_TAG, "Displaying: " + result.curAccel);
             		
-// UPDATE GUI with service result here
+            		// UPDATE GUI with service result here
             		String elev = String.format("%.2f", result.elevation);
             		String dist = String.format("%.2f", result.distance);
             		elevationTextView.setText(elev);
@@ -298,6 +298,8 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		recordButton.setBackgroundResource(R.drawable.record_button_resume);
     		// Pause the timer
     		timerHandler.removeCallbacks(timerRunnable);
+    		//Pause service
+    		myService.setServiceRunning(false);
     		
         	showToast("Paused");
     	} else if (activityState == STATE_PAUSED) {
@@ -306,6 +308,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		// Resume the timer
     		timerStartTime = System.currentTimeMillis();
     		timerHandler.postDelayed(timerRunnable, 0);
+    		
+    		//Resume service
+    		myService.setServiceRunning(true);
     		
             // notify resumed
         	showToast("Resumed");
