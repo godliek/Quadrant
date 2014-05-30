@@ -33,19 +33,15 @@ public class GPSServiceTask implements Runnable{
     private LocationManager myLocationManager;
     private LocationListener myLocationListener;
     private Criteria criteria;
-    private double longitude, latitude;
+    private double longitude, latitude, altitude;
     private double prevLong = - 9999;
     private double prevLat = -9999;
     
-    private double totalElevation = 0;
+    private double totalElevation;
     private double prevElevation = -9999;
     
-    private double distanceTraveled = 0;
-    
-	private Sensor accelSensor;
-	private double curAccel;
-	private double maxAccel;
-	private String maxTime;
+    private double distanceTraveled;
+
 	
 	// Constructor
     public GPSServiceTask(Context _context) {
@@ -59,29 +55,33 @@ public class GPSServiceTask implements Runnable{
     	myLocationListener = new LocationListener() {
     		
     		public void onLocationChanged(Location location) {
-    		    //tv1.setText("Lat " +   location.getLatitude() + " Long " + location.getLongitude());
-    			Log.d("Latitude", "LAT: " + location.getLatitude());
-    			Log.d("Longitude", "LONG: " + location.getLongitude());
-    			Log.d("Elevation", "ELEV: " + location.getAltitude());
+    			latitude = location.getLatitude();
+    			longitude = location.getLongitude();
+    			altitude = location.getAltitude();
     			
+    			
+    			//Elevation
     			if(prevElevation == -9999) {	//only on first run, set the elevation to the first elevation recorded.
-    				prevElevation = location.getAltitude();
+    				prevElevation = altitude;
     			} else {
-    				if(location.getAltitude() > prevElevation) {
-    					totalElevation = totalElevation + (location.getAltitude() - prevElevation);
-    					prevElevation = location.getAltitude();
+    				if(altitude > prevElevation) {	//otherwise, if the elevation is higher than the previous point, add it to the total
+    					totalElevation = totalElevation + (altitude - prevElevation);
+    					prevElevation = altitude;	//update previous elevation
     				}
     			}
     			
-    			if(prevLat == -9999) {
-    				prevLat = location.getLatitude();
-    				prevLong = location.getLongitude();
+    			//Distance
+    			if(prevLat == -9999) {	//Set up values after first polling of gps data
+    				prevLat = latitude;
+    				prevLong = longitude;
+    				distanceTraveled = 0;
+    				totalElevation = 0;
     			}
-    			else {
+    			else {					//Do distance calculations once there has been more than one gps location polled.
     				float[] results = new float[3];
-    				Location.distanceBetween(prevLat, prevLong, location.getLatitude(), location.getLongitude(), results);
-    				prevLat = location.getLatitude();
-    				prevLong = location.getLongitude();
+    				Location.distanceBetween(prevLat, prevLong, latitude, longitude, results);	//Distance between current and previous point
+    				prevLat = latitude;		//Update long/lat values so the current values are now previous, to set up for the next pass
+    				prevLong = longitude;
     				distanceTraveled += results[0];
     			}
     		}
@@ -101,10 +101,9 @@ public class GPSServiceTask implements Runnable{
     	}
     	else {
     		String best = myLocationManager.getBestProvider(criteria, false);
-    		long time = 6000;
-    		float minDist = 5;
+    		long time = 2000;	//Time interval for GPS polling
+    		float minDist = 5;	//Minimum distance to travel between pollings.
     		myLocationManager.requestLocationUpdates(best, time, minDist, myLocationListener);
-    		Log.d("test","requested location updates");
     	}
     }
     
@@ -180,9 +179,6 @@ public class GPSServiceTask implements Runnable{
     		}
     		ServiceResult result = freeResults.poll();
     		if (result != null) {
-    			result.curAccel = curAccel;
-    			result.maxAccel = maxAccel;
-    			result.maxTime = maxTime;
     			result.elevation = totalElevation * 3.28084;		//elevation in feet
     			result.distance = distanceTraveled * 0.000621371;	//distance in miles
     			for (ResultCallback resultCallback : resultCallbacks) {

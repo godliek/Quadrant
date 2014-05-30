@@ -277,6 +277,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		timerHandler.postDelayed(timerRunnable, 0);
     	}
     	
+    	
     	if (serviceBound) { // stop the service
         	if (myService != null) {
         		myService.removeResultCallback(this);
