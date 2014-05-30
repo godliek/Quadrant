@@ -33,6 +33,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     private static final int STATE_IDLE = 0;
     private static final int STATE_RECORDING = 1;
     private static final int STATE_PAUSED = 2;
+    private double elapsedTime = 0;
+    
+    //UI Elements
+    private TextView elevationTextView, distanceTextView, velocityTextView;
     
     // State
     private int activityState;
@@ -52,6 +56,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             
             TextView tv = (TextView) findViewById(R.id.textView_timer);
             tv.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            elapsedTime = timerElapsedTime;
 
             timerHandler.postDelayed(this, 500);
         }
@@ -67,6 +72,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         setContentView(R.layout.activity_main);
         mUiHandler = new Handler(getMainLooper(), new UiCallback());    
         serviceBound = false;
+        
+        elevationTextView = (TextView) findViewById(R.id.textView_elevationValue);
+        distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
+        velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
         
         restoreState(savedInstanceState);
     }
@@ -217,6 +226,18 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             		//Log.i(LOG_TAG, "Displaying: " + result.curAccel);
             		
 // UPDATE GUI with service result here
+            		
+            		String elev = String.format("%.2f", result.elevation);
+            		String dist = String.format("%.2f", result.distance);
+            		elevationTextView.setText(elev);
+            		distanceTextView.setText(dist);
+            		
+            		double mi = result.distance;
+            		double h = elapsedTime / (1000 * 60 * 60);
+            		double mph = mi/h;
+            		
+            		String velocity = String.format("%.2f", mph);
+            		velocityTextView.setText(velocity);
             		
             		// Tell the worker that the bitmap is ready to be reused
             		if (serviceBound && myService != null) {

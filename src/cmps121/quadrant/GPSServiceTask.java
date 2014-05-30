@@ -34,8 +34,13 @@ public class GPSServiceTask implements Runnable{
     private LocationListener myLocationListener;
     private Criteria criteria;
     private double longitude, latitude;
+    private double prevLong = - 9999;
+    private double prevLat = -9999;
     
+    private double totalElevation = 0;
+    private double prevElevation = -9999;
     
+    private double distanceTraveled = 0;
     
 	private Sensor accelSensor;
 	private double curAccel;
@@ -58,6 +63,27 @@ public class GPSServiceTask implements Runnable{
     			Log.d("Latitude", "LAT: " + location.getLatitude());
     			Log.d("Longitude", "LONG: " + location.getLongitude());
     			Log.d("Elevation", "ELEV: " + location.getAltitude());
+    			
+    			if(prevElevation == -9999) {	//only on first run, set the elevation to the first elevation recorded.
+    				prevElevation = location.getAltitude();
+    			} else {
+    				if(location.getAltitude() > prevElevation) {
+    					totalElevation = totalElevation + (location.getAltitude() - prevElevation);
+    					prevElevation = location.getAltitude();
+    				}
+    			}
+    			
+    			if(prevLat == -9999) {
+    				prevLat = location.getLatitude();
+    				prevLong = location.getLongitude();
+    			}
+    			else {
+    				float[] results = new float[3];
+    				Location.distanceBetween(prevLat, prevLong, location.getLatitude(), location.getLongitude(), results);
+    				prevLat = location.getLatitude();
+    				prevLong = location.getLongitude();
+    				distanceTraveled += results[0];
+    			}
     		}
     		public void onProviderDisabled(String provider) {}
     		public void onProviderEnabled(String provider) {}
@@ -157,6 +183,8 @@ public class GPSServiceTask implements Runnable{
     			result.curAccel = curAccel;
     			result.maxAccel = maxAccel;
     			result.maxTime = maxTime;
+    			result.elevation = totalElevation * 3.28084;		//elevation in feet
+    			result.distance = distanceTraveled * 0.000621371;	//distance in miles
     			for (ResultCallback resultCallback : resultCallbacks) {
     				//Log.i(LOG_TAG, "calling resultCallback for " + result.curAccel);
     				resultCallback.onResultReady(result);
