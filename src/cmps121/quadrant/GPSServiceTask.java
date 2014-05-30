@@ -28,13 +28,12 @@ public class GPSServiceTask implements Runnable{
     private Set<ResultCallback> resultCallbacks = Collections.synchronizedSet(new HashSet<ResultCallback>());
     private ConcurrentLinkedQueue<ServiceResult> freeResults = new ConcurrentLinkedQueue<ServiceResult>();
     
-    // Sensor data
-    //private SensorManager mSensorManager;
+    // Location data
     private LocationManager myLocationManager;
     private LocationListener myLocationListener;
     private Criteria criteria;
     private double longitude, latitude, altitude;
-    private double prevLong = - 9999;
+    private double prevLong = -9999;
     private double prevLat = -9999;
     
     private double totalElevation;
@@ -45,7 +44,6 @@ public class GPSServiceTask implements Runnable{
 	
 	// Constructor
     public GPSServiceTask(Context _context) {
-    	Log.d("test","creating service task");
     	context = _context;
     	
     	myLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
@@ -115,19 +113,16 @@ public class GPSServiceTask implements Runnable{
     public void run() {
         running = true;
         while(true){
-        while (running) {
-        	// Sleep a tiny bit.
-			try {
-				Thread.sleep(250);
-			} catch (Exception e) {
-				e.getLocalizedMessage();
-			}
-
-			// report the acceleration to the UI thread in MainActivity
-			//Log.i(LOG_TAG, "Sending accelerometer readout: " + curAccel);
-			Log.d("running", "service is running");
-			notifyResultCallback();
-        }
+        	while (running) {
+        		// Sleep a tiny bit.
+        		try {
+        			Thread.sleep(2000);
+        		} catch (Exception e) {
+        			e.getLocalizedMessage();
+        		}
+        		// report the acceleration to the UI thread in MainActivity
+        		notifyResultCallback();
+        	}
         }
     }
 
