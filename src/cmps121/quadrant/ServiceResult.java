@@ -10,4 +10,5 @@ public class ServiceResult {
 	public double distance;
 	public double speed;
 	public double elevation;
+	public double latitude, longitude;
 }

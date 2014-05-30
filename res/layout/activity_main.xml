@@ -84,7 +84,7 @@
                 android:background="@drawable/text_border" >
 
                 <TextView
-                    android:id="@+id/textView_elevationValue"
+                    android:id="@+id/textView_speedValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="4dp"
@@ -125,7 +125,7 @@
                 android:background="@drawable/text_border" >
 
                 <TextView
-                    android:id="@+id/textView_speedValue"
+                    android:id="@+id/textView_elevationValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="4dp"
