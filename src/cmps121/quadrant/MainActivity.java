@@ -113,7 +113,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 		if (id == R.id.action_help) {
 			return true;
 		} else if (id == R.id.action_history) {
-			Intent intent = new Intent(this, cmps121.quadrant.HistoryActivity.class);
+			Intent intent = new Intent(this, HistoryActivity.class);
 			startActivity(intent);
 			return true;
 		}
@@ -195,7 +195,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     @Override
     public void onResultReady(ServiceResult result) {
     	if (result != null) {
-    		Log.i(LOG_TAG, "Preparing a message for " + result.curAccel);
+    		//Log.i(LOG_TAG, "Preparing a message for " + result.curAccel);
     	} else {
     		Log.e(LOG_TAG, "Received an empty result!");
     	}
@@ -214,13 +214,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             	ServiceResult result = (ServiceResult) message.obj;
             	// Displays it.
             	if (result != null) {
-            		Log.i(LOG_TAG, "Displaying: " + result.curAccel);
+            		//Log.i(LOG_TAG, "Displaying: " + result.curAccel);
             		
 // UPDATE GUI with service result here
             		
             		// Tell the worker that the bitmap is ready to be reused
             		if (serviceBound && myService != null) {
-            			Log.i(LOG_TAG, "Releasing result holder for " + result.curAccel);
+            			//Log.i(LOG_TAG, "Releasing result holder for " + result.curAccel);
             			myService.releaseResult(result);
             		}
             	} else {
@@ -245,12 +245,12 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             timerHandler.postDelayed(timerRunnable, 0);
     	} else if (activityState == STATE_RECORDING) {
     		activityState = STATE_PAUSED;
-    		tv.setText("PAUSE");
+    		tv.setText("RESUME");
     		// Pause the timer
     		timerHandler.removeCallbacks(timerRunnable);
     	} else if (activityState == STATE_PAUSED) {
     		activityState = STATE_RECORDING;
-    		tv.setText("RESUME");
+    		tv.setText("PAUSE");
     		// Resume the timer
     		timerStartTime = System.currentTimeMillis();
     		timerHandler.postDelayed(timerRunnable, 0);

@@ -12,21 +12,31 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.util.Log;
 
-public class GPSServiceTask implements Runnable, SensorEventListener {
+public class GPSServiceTask implements Runnable{
 
 	public static final String LOG_TAG = "MyService";
 	private boolean running;
 	private Context context;
 	
-    private Set<ResultCallback> resultCallbacks = Collections.synchronizedSet(
-    		new HashSet<ResultCallback>());
-    private ConcurrentLinkedQueue<ServiceResult> freeResults = 
-    		new ConcurrentLinkedQueue<ServiceResult>();
+    private Set<ResultCallback> resultCallbacks = Collections.synchronizedSet(new HashSet<ResultCallback>());
+    private ConcurrentLinkedQueue<ServiceResult> freeResults = new ConcurrentLinkedQueue<ServiceResult>();
     
     // Sensor data
-    private SensorManager mSensorManager;
+    //private SensorManager mSensorManager;
+    private LocationManager myLocationManager;
+    private LocationListener myLocationListener;
+    private Criteria criteria;
+    private double longitude, latitude;
+    
+    
+    
 	private Sensor accelSensor;
 	private double curAccel;
 	private double maxAccel;
@@ -34,17 +44,42 @@ public class GPSServiceTask implements Runnable, SensorEventListener {
 	
 	// Constructor
     public GPSServiceTask(Context _context) {
+    	Log.d("test","creating service task");
     	context = _context;
-    	curAccel = 0;
-    	maxAccel = 0;
-        mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-        if(mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
-        	accelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        } else {
-        	Log.i(LOG_TAG, "ERROR: NO ACCELEROMETER");
-        	running = false;
-        }
-        mSensorManager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    	
+    	myLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    	criteria = new Criteria();
+    	criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+    	
+    	myLocationListener = new LocationListener() {
+    		
+    		public void onLocationChanged(Location location) {
+    		    //tv1.setText("Lat " +   location.getLatitude() + " Long " + location.getLongitude());
+    			Log.d("Latitude", "LAT: " + location.getLatitude());
+    			Log.d("Longitude", "LONG: " + location.getLongitude());
+    			Log.d("Elevation", "ELEV: " + location.getAltitude());
+    		}
+    		public void onProviderDisabled(String provider) {}
+    		public void onProviderEnabled(String provider) {}
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				// TODO Auto-generated method stub
+				
+			}
+    		};		
+
+    	
+    	if(criteria == null) {
+    		Log.d("criteria", "criteria is NULL");
+    	}
+    	else {
+    		String best = myLocationManager.getBestProvider(criteria, false);
+    		long time = 6000;
+    		float minDist = 5;
+    		myLocationManager.requestLocationUpdates(best, time, minDist, myLocationListener);
+    		Log.d("test","requested location updates");
+    	}
     }
     
     @Override
@@ -61,26 +96,9 @@ public class GPSServiceTask implements Runnable, SensorEventListener {
 			}
 
 			// report the acceleration to the UI thread in MainActivity
-			Log.i(LOG_TAG, "Sending accelerometer readout: " + curAccel);
+			//Log.i(LOG_TAG, "Sending accelerometer readout: " + curAccel);
 			notifyResultCallback();
         }
-    }
-    
-    // records data from the linear accelerometer on a normal interval
-    public void onSensorChanged(SensorEvent event) {
-    	
-    	double x = event.values[0];
-    	double y = event.values[1];
-    	double z = event.values[2];
-    	curAccel = Math.sqrt(x*x + y*y + z*z);
-    	
-    	if (curAccel > maxAccel) {
-    		maxAccel = curAccel;
-    		Date timeNow = new Date();
-    		SimpleDateFormat ft = new SimpleDateFormat ("E hh:mm:ss a");
-    		maxTime = ft.format(timeNow);
-    	}
-    	
     }
 
     public void addResultCallback(ResultCallback resultCallback) {
@@ -115,7 +133,7 @@ public class GPSServiceTask implements Runnable, SensorEventListener {
     
     // This is called by the UI thread to return a result to the free pool.
     public void releaseResult(ServiceResult r) {
-    	Log.i(LOG_TAG, "Freeing result holder for " + r.curAccel);
+    	//Log.i(LOG_TAG, "Freeing result holder for " + r.curAccel);
         freeResults.offer(r);
     }
     
@@ -140,7 +158,7 @@ public class GPSServiceTask implements Runnable, SensorEventListener {
     			result.maxAccel = maxAccel;
     			result.maxTime = maxTime;
     			for (ResultCallback resultCallback : resultCallbacks) {
-    				Log.i(LOG_TAG, "calling resultCallback for " + result.curAccel);
+    				//Log.i(LOG_TAG, "calling resultCallback for " + result.curAccel);
     				resultCallback.onResultReady(result);
     			}
     		}
@@ -150,9 +168,4 @@ public class GPSServiceTask implements Runnable, SensorEventListener {
     public interface ResultCallback {
         void onResultReady(ServiceResult result);
     }
-
-	@Override
-	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		// ignore for now
-	}
 }
