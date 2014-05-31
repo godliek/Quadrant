@@ -1,5 +1,15 @@
 package cmps121.quadrant;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import cmps121.quadrant.GPSService.MyBinder;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -42,13 +52,20 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     // Notification
     private static Toast toast;
     
+   
+    
     private long elapsedTime = 0;
     
     //UI Elements
     private TextView elevationTextView, distanceTextView, velocityTextView;
+    private Button recordButton;
     
     // Persistent data
     private SharedPreferences mPrefs;
+    
+    //Stored JSON data
+    final private String fileName = "TRIPDATA.TXT";
+    private JSONArray tripHistory;
     
     //runs without a timer by reposting this handler at the end of the runnable
     Handler timerHandler = new Handler();
@@ -85,6 +102,44 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         elevationTextView = (TextView) findViewById(R.id.textView_elevationValue);
         distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
         velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
+        
+    	recordButton = (Button) findViewById(R.id.button_record);
+    	
+    	tripHistory = new JSONArray();
+    	
+    	//try to load data from file
+    	Log.d("load","trying to load file");
+    	StringBuffer datax = new StringBuffer("");
+    	try {
+			FileInputStream fis = openFileInput(fileName);
+            InputStreamReader isr = new InputStreamReader(fis) ;
+            BufferedReader buffreader = new BufferedReader(isr) ;
+
+            String readString = buffreader.readLine ( ) ;
+            while ( readString != null ) {
+                datax.append(readString);
+                readString = buffreader.readLine ( ) ;
+            }
+			fis.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+    	Log.d("opening file", datax.toString());
+    	
+    	try {
+			tripHistory = new JSONArray(datax.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
     	
     	// restore persistent data
     	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
@@ -224,8 +279,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             		distanceTextView.setText(dist);
             		
             		double mi = result.distance;
-            		double h = elapsedTime / (1000 * 60 * 60);
+            		double h = (double) elapsedTime / (1000 * 60 * 60);
             		double mph = mi/h;
+            		Log.d("time",  "" + elapsedTime);
             		
             		String velocity = String.format("%.2f", mph);
             		velocityTextView.setText(velocity);
@@ -245,7 +301,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     }
     
     public void clickRecord(View v) {
-    	Button recordButton = (Button) findViewById(R.id.button_record);
+
     	
     	// handle the recording state
     	if (activityState == STATE_IDLE) {
@@ -289,7 +345,40 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     public void clickFinish(View v) {
     	
     	if (activityState != STATE_IDLE) {
-	    	// stop the service
+	    	
+    		//update state, button
+    		activityState = STATE_IDLE;
+    		recordButton.setBackgroundResource(R.drawable.rec_button);
+    		//stop counting
+    		timerHandler.removeCallbacks(timerRunnable);
+    		elapsedTime = 0;
+    		
+    		JSONArray j = myService.getData();
+    		tripHistory.put(j);
+    		
+    		Log.d("JSON DATA", tripHistory.toString());
+    		
+    		//TODO: check the json data to make sure that it is not empty before writing
+    		
+    		FileOutputStream fos;
+			try {
+				fos = openFileOutput(fileName, Context.MODE_PRIVATE);
+	    		fos.write(tripHistory.toString().getBytes());
+	    		fos.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+    		
+    		
+    		
+    		
+    		// stop the service
+    		
 	    	if (serviceBound) {
 	        	if (myService != null) {
 	        		myService.removeResultCallback(this);

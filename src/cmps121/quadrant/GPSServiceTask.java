@@ -7,6 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -41,10 +45,14 @@ public class GPSServiceTask implements Runnable{
     
     private double distanceTraveled;
 
+	private JSONArray tripData;
+	
 	
 	// Constructor
     public GPSServiceTask(Context _context) {
     	context = _context;
+    	
+    	tripData = new JSONArray();
     	
     	myLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
     	criteria = new Criteria();
@@ -84,6 +92,17 @@ public class GPSServiceTask implements Runnable{
     				prevLat = latitude;		//Update long/lat values so the current values are now previous, to set up for the next pass
     				prevLong = longitude;
     				distanceTraveled += results[0];
+    				JSONObject j = new JSONObject();
+    				try {
+						j.put("lat", String.valueOf(latitude));
+						j.put("long", String.valueOf(longitude));
+						j.put("time", String.valueOf(System.currentTimeMillis()));
+						tripData.put(j);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+    				
     			}
     		}
     		public void onProviderDisabled(String provider) {}
@@ -193,7 +212,7 @@ public class GPSServiceTask implements Runnable{
     		if (result != null) {
     			result.elevation = totalElevation * 3.28084;		//elevation in feet
     			result.distance = distanceTraveled * 0.000621371;	//distance in miles
-    			Log.d(LOG_TAG, "" + result.elevation + "\n" + result.distance);
+    			Log.d(LOG_TAG, "ELEV: " + result.elevation + "\n" + "dist: " + result.distance);
     			for (ResultCallback resultCallback : resultCallbacks) {
     				//Log.i(LOG_TAG, "calling resultCallback for " + result.curAccel);
     				resultCallback.onResultReady(result);
@@ -204,6 +223,10 @@ public class GPSServiceTask implements Runnable{
 
     public interface ResultCallback {
         void onResultReady(ServiceResult result);
+    }
+    
+    public JSONArray getTripData() {
+    	return tripData;
     }
 }
 

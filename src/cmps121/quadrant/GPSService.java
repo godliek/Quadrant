@@ -3,6 +3,8 @@
 
 package cmps121.quadrant;
 
+import org.json.JSONArray;
+
 import cmps121.quadrant.GPSServiceTask.ResultCallback;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -126,5 +128,8 @@ public class GPSService extends Service {
     		myTask.startProcessing();
     	else 
     		myTask.stopProcessing();
+    }
+    public JSONArray getData() {
+    	return myTask.getTripData();
     }
 }
