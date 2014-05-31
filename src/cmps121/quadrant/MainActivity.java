@@ -12,20 +12,24 @@ import org.json.JSONException;
 
 import cmps121.quadrant.GPSService.MyBinder;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -164,11 +168,43 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 	    	bindMyService();
         }
         
-        // resume timer and restore GUI
-    	if(activityState == STATE_RECORDING) {
+        // check if the device has a GPS module
+        PackageManager pm = getPackageManager();
+        boolean hasGPS = pm.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
+        
+    	if (hasGPS) {
+    		// prompt to enable GPS if necessary
+    		promptEnableGPS();
+    	} else {
+    		// The device doesn't support GPS (exit)
+    		notifyDeviceIncompatible();
+    	}
+        
+        // restore GUI
+    	TextView tv = (TextView) findViewById(R.id.textView_timer);
+    	if (activityState == STATE_IDLE) {
+    		//restore timer
+    		tv.setText("00:00:00");
     		
+    	} else if(activityState == STATE_RECORDING) {
+    		// restore timer
+            int seconds = (int) (timerElapsedTime / 1000);
+            int minutes = seconds / 60;
+            int hours = minutes / 60;
+            seconds = seconds % 60;
+            minutes = minutes % 60;
+            tv.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            // resume timer
+    		timerHandler.postDelayed(timerRunnable, 0);
     	} else if (activityState == STATE_PAUSED) {
-    		
+    		// restore timer
+            int seconds = (int) (timerElapsedTime / 1000);
+            int minutes = seconds / 60;
+            int hours = minutes / 60;
+            seconds = seconds % 60;
+            minutes = minutes % 60;
+            tv.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+
     	}
     }
     
@@ -200,6 +236,53 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         ed.putInt("activityState", activityState);
         ed.commit();
     }
+    
+ // check if GPS is available and prompt the user to enable it if needed
+ 	private boolean promptEnableGPS() {
+ 		boolean GPSEnabled = false;
+ 		LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+ 		GPSEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+ 		if(!GPSEnabled) {
+ 		    //Ask the user to enable GPS
+ 		    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+ 		    builder.setTitle("Location Manager");
+ 		    builder.setMessage("This application requires GPS Location data.  Would you like to enable GPS?");
+ 		    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+ 		        @Override
+ 		        public void onClick(DialogInterface dialog, int which) {
+ 		            //Launch settings, allowing user to make a change
+ 		            Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+ 		            startActivity(i);
+ 		        }
+ 		    });
+ 		    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+ 		        @Override
+ 		        public void onClick(DialogInterface dialog, int which) {
+ 		            //No location service, leave the activity
+ 		            finish();
+ 		        }
+ 		    });
+ 		    builder.create().show();
+ 		}
+ 		
+ 		return GPSEnabled;
+ 	}
+ 	
+ 	// notify the user that their device is incompatible with the Application
+ 	private void notifyDeviceIncompatible() {
+ 		//Ask the user to enable GPS
+ 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+ 	    builder.setTitle("Warning");
+ 	    builder.setMessage("Your device does not support GPS location services.  Press OK to exit.");
+ 	    builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+ 	        @Override
+ 	        public void onClick(DialogInterface dialog, int which) {
+ 	            //No location service, leave the activity
+ 	            finish();
+ 	        }
+ 	    });
+ 	    builder.create().show();
+ 	}
     
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
