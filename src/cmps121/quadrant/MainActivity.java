@@ -294,6 +294,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 			return true;
 		} else if (id == R.id.action_history) {
 			Intent intent = new Intent(this, HistoryActivity.class);
+			intent.putExtra("tripHistory", tripHistory.toString());
 			startActivity(intent);
 			return true;
 		}

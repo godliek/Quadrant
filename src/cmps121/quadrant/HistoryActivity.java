@@ -1,12 +1,21 @@
 package cmps121.quadrant;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,15 +44,30 @@ public class HistoryActivity extends Activity {
 		// initialize class members
 		savedTrips = new ArrayList<GPSEntry>();
 		
-		GPSEntry sampleEntry1 = new GPSEntry();
-		sampleEntry1.something = "sample 1";
-		GPSEntry sampleEntry2 = new GPSEntry();
-		sampleEntry2.something = "sample 2";
-		GPSEntry sampleEntry3 = new GPSEntry();
-		sampleEntry3.something = "sample 3";
-		savedTrips.add(sampleEntry1);
-		savedTrips.add(sampleEntry2);
-		savedTrips.add(sampleEntry3);
+		
+		Intent intent = getIntent();
+		try {
+			JSONArray tripData = new JSONArray(intent.getStringExtra("tripHistory").toString());
+			Log.d("JSON", "array made from extras");
+			for(int i = 0; i < tripData.length(); i++) {
+				Log.d("loop", "trying to add item to listview");
+				JSONArray jArr = (JSONArray) tripData.get(i);
+				GPSEntry g = new GPSEntry(jArr);
+				
+				//Get time of first GPS data in JSON array
+				JSONObject jObj = (JSONObject) jArr.get(0);
+				String time = jObj.getString("time");
+				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+				String dateStarted = formatter.format(new Date(Long.parseLong(time)));
+				
+				g.something = dateStarted;
+				savedTrips.add(g);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 		aa = new ListViewAdapter(this, R.layout.list_element, savedTrips);
 		ListView myListView = (ListView) findViewById(R.id.listView1);
@@ -55,7 +79,8 @@ public class HistoryActivity extends Activity {
 		myListView.setOnItemClickListener(new OnItemClickListener() {
 		    public void onItemClick(AdapterView<?> parent,View view, int position, long id) 
 		    {
-		    	// do something when a list view element is selected
+		    	//Start mapview activity with data from this GPSEntry
+		    	Log.d("GPSEntryClicked", savedTrips.get(position).data.toString());
 		    }
 		});
 		
@@ -88,7 +113,11 @@ public class HistoryActivity extends Activity {
 	 */
 	private class GPSEntry {
 		GPSEntry() {};
+		GPSEntry(JSONArray jArr) {
+			data = jArr;
+		}
 		String something;
+		JSONArray data;
 	}
 	
 	/** ListViewAdapter
