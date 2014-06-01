@@ -44,7 +44,6 @@ public class HistoryActivity extends Activity {
 		// initialize class members
 		savedTrips = new ArrayList<GPSEntry>();
 		
-		
 		Intent intent = getIntent();
 		try {
 			JSONArray tripData = new JSONArray(intent.getStringExtra("tripHistory").toString());
@@ -81,6 +80,10 @@ public class HistoryActivity extends Activity {
 		    {
 		    	//Start mapview activity with data from this GPSEntry
 		    	Log.d("GPSEntryClicked", savedTrips.get(position).data.toString());
+		    	String tripData = savedTrips.get(position).data.toString();
+		    	Intent i = new Intent(getApplicationContext(), ViewTripActivity.class);
+		    	i.putExtra("tripData", tripData);
+		    	startActivity(i);
 		    }
 		});
 		

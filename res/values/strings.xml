@@ -5,10 +5,11 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_help">Help</string>
     <string name="action_history">History</string>
-    <string name="title_activity_history">Record</string>
+    <string name="title_activity_history">View Previous Trips</string>
     <string name="gps_service_started">GPS service started (debug)</string>
     <string name="gps_service_running">GPS service running (debug)</string>
     <string name="notification_title">GPS Service</string>
     <string name="record">RECORD</string>
+    <string name="title_activity_view_trip">Map View of Previous Trip</string>
 
 </resources>
