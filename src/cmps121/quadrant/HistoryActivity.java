@@ -51,16 +51,18 @@ public class HistoryActivity extends Activity {
 			for(int i = 0; i < tripData.length(); i++) {
 				Log.d("loop", "trying to add item to listview");
 				JSONArray jArr = (JSONArray) tripData.get(i);
+				if(!jArr.toString().equals("[]")) {
 				GPSEntry g = new GPSEntry(jArr);
 				
 				//Get time of first GPS data in JSON array
-				JSONObject jObj = (JSONObject) jArr.get(0);
-				String time = jObj.getString("time");
-				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-				String dateStarted = formatter.format(new Date(Long.parseLong(time)));
+					JSONObject jObj = (JSONObject) jArr.get(0);
+					String time = jObj.getString("time");
+					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+					String dateStarted = formatter.format(new Date(Long.parseLong(time)));
 				
-				g.something = dateStarted;
-				savedTrips.add(g);
+					g.something = dateStarted;
+					savedTrips.add(g);
+				}
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

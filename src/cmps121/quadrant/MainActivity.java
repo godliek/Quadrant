@@ -55,9 +55,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     
     // Notification
     private static Toast toast;
-    
-   
-    
+
     private long elapsedTime = 0;
     
     //UI Elements
@@ -427,7 +425,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     public void clickFinish(View v) {
     	
     	if (activityState != STATE_IDLE) {
-	    	
+	    	//Reset clock
+    		timerElapsedTime = 0;
+    		
+    		
     		//update state, button
     		activityState = STATE_IDLE;
     		recordButton.setBackgroundResource(R.drawable.rec_button);
@@ -436,7 +437,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		elapsedTime = 0;
     		
     		JSONArray j = myService.getData();
-    		tripHistory.put(j);
+    		Log.d("JSON DATA", j.toString());
+    		if(!j.toString().equals("[]"))
+    			tripHistory.put(j);
     		
     		Log.d("JSON DATA", tripHistory.toString());
     		
@@ -447,6 +450,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 				fos = openFileOutput(fileName, Context.MODE_PRIVATE);
 	    		fos.write(tripHistory.toString().getBytes());
 	    		fos.close();
+	    		showToast("Trip Saved!");
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
