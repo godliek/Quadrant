@@ -51,7 +51,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     private static final int STATE_PAUSED = 2;
     
     // State
-    private int activityState;
+    private int activityState = STATE_IDLE;
     
     // Notification
     private static Toast toast;
@@ -164,7 +164,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     @Override
     protected void onResume() {
         super.onResume();   
-        if (!serviceBound) {
+        if (!serviceBound && activityState != STATE_IDLE) {
 	    	bindMyService();
         }
         
@@ -385,8 +385,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     }
     
     public void clickRecord(View v) {
-
-    	
     	// handle the recording state
     	if (activityState == STATE_IDLE) {
     		activityState = STATE_RECORDING;
@@ -456,11 +454,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-    		
-    		
-    		
-    		
     		// stop the service
     		
 	    	if (serviceBound) {
