@@ -101,6 +101,9 @@ public class GPSServiceTask implements Runnable{
 						j.put("long", String.valueOf(longitude));
 						j.put("time", String.valueOf(System.currentTimeMillis()));
 						j.put("elev", String.valueOf(altitude));
+						j.put("totalElev", String.valueOf(totalElevation * 3.28084));
+						j.put("totalDistance", String.valueOf(distanceTraveled * 0.000621371));
+						
 						tripData.put(j);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block

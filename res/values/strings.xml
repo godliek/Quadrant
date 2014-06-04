@@ -11,6 +11,7 @@
     <string name="notification_title">GPS Service</string>
     <string name="record">RECORD</string>
     <string name="title_activity_view_trip">Map View of Previous Trip</string>
+    <string name="title_activity_view_stats">Details</string>
     <string name="title_activity_settings">Settings</string>
 
 </resources>

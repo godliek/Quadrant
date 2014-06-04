@@ -73,8 +73,13 @@ public class HistoryActivity extends Activity {
 					String time = jObj.getString("time");
 					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 					String dateStarted = formatter.format(new Date(Long.parseLong(time)));
+					
+					jObj = (JSONObject) jArr.getJSONObject(jArr.length() - 1);
+					time = jObj.getString("time");
+					formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+					String dateEnded = formatter.format(new Date(Long.parseLong(time)));
 				
-					g.titleText = dateStarted;
+					g.titleText = "Start: " + dateStarted + " \nEnd: " + dateEnded;
 					savedTrips.add(g);
 				}
 			}
@@ -84,20 +89,6 @@ public class HistoryActivity extends Activity {
 		}
 		
 		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
-
-		/*
-		// create a list item click handler
-		myListView.setOnItemClickListener(new OnItemClickListener() {
-		    public void onItemClick(AdapterView<?> parent,View view, int position, long id) 
-		    {
-		    	//Start mapview activity with data from this GPSEntry
-		    	Log.d("GPSEntryClicked", savedTrips.get(position).data.toString());
-		    	String tripData = savedTrips.get(position).data.toString();
-		    	Intent i = new Intent(getApplicationContext(), ViewTripActivity.class);
-		    	i.putExtra("tripData", tripData);
-		    	startActivity(i);
-		    }
-		});*/
 		
 		// refresh the listview
 		aa.notifyDataSetChanged();
@@ -172,18 +163,7 @@ public class HistoryActivity extends Activity {
 			TextView tv = (TextView) newView.findViewById(R.id.listText);
 			tv.setText(w.titleText);
 			
-			Button b1 = (Button) newView.findViewById(R.id.viewButton);
-			b1.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-			    	//Start mapview activity with data from this GPSEntry
-			    	Log.d("GPSEntryClicked", savedTrips.get(position).data.toString());
-			    	String tripData = savedTrips.get(position).data.toString();
-			    	Intent i = new Intent(getApplicationContext(), ViewTripActivity.class);
-			    	i.putExtra("tripData", tripData);
-			    	startActivity(i);
-				}
-			});
+
 			Button b = (Button) newView.findViewById(R.id.removeButton);
 			b.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -223,6 +203,32 @@ public class HistoryActivity extends Activity {
 						e.printStackTrace();
 					}
 
+				}
+			});
+			
+			Button b1 = (Button) newView.findViewById(R.id.viewStatsButton);
+			b1.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+			    	//Start mapview activity with data from this GPSEntry
+			    	Log.d("GPSEntryClicked", "View stats");
+			    	String tripData = savedTrips.get(position).data.toString();
+			    	Intent i = new Intent(getApplicationContext(), ViewStatsActivity.class);
+			    	i.putExtra("tripData", tripData);
+			    	startActivity(i);
+				}
+			});
+			
+			Button b2 = (Button) newView.findViewById(R.id.viewButton);
+			b2.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+			    	//Start mapview activity with data from this GPSEntry
+			    	Log.d("GPSEntryClicked", "view map");
+			    	String tripData = savedTrips.get(position).data.toString();
+			    	Intent i = new Intent(getApplicationContext(), ViewTripActivity.class);
+			    	i.putExtra("tripData", tripData);
+			    	startActivity(i);
 				}
 			});
 

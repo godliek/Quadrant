@@ -14,21 +14,31 @@
         android:layout_marginTop="10dp"
         android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+		<LinearLayout
+    		android:layout_alignParentRight="true"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content" >
+    		<Button
+        		android:id="@+id/removeButton"
+        		style="?android:attr/buttonStyleSmall"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:background="@drawable/cancelbutton" />
 
-    <Button
-        android:id="@+id/viewButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:text="View Trip" />
-
-    <Button
-        android:id="@+id/removeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/viewButton"
-        android:text="Remove" />
+    		<Button
+        		android:id="@+id/viewStatsButton"
+        		style="?android:attr/buttonStyleSmall"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:text="Details" />
+    
+        	<Button
+        		android:id="@+id/viewButton"
+        		style="?android:attr/buttonStyleSmall"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:text="Map" />
+    	</LinearLayout>
 
 </RelativeLayout>
