@@ -1,5 +1,8 @@
 package cmps121.quadrant;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,10 +63,14 @@ public class ViewTripActivity extends Activity {
 				//get data from JSON
 				double lat = Double.parseDouble(jObj.get("lat").toString());
 				double lng = Double.parseDouble(jObj.get("long").toString());
+				double elev = Double.parseDouble(jObj.getString("elev").toString());
+				String time = getTimeFromEpoch(jObj.getString("time"));
+				
+				
 				//Add coordinates to polyline
 				plo.add(new LatLng(lat, lng));
 				//Add coordinates to marker
-				MarkerOptions marker = new MarkerOptions().position(new LatLng(lat, lng)).title("Position " + i);
+				MarkerOptions marker = new MarkerOptions().position(new LatLng(lat, lng)).title(time).snippet("Elevation: " + String.valueOf(elev));
 				googleMap.addMarker(marker);
 				bounds.include(new LatLng(lat, lng));
 			}
@@ -99,4 +106,9 @@ public class ViewTripActivity extends Activity {
         initilizeMap();
     }
  
+    public String getTimeFromEpoch(String epoch) {
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+		String currentTime = formatter.format(new Date(Long.parseLong(epoch)));
+		return currentTime;
+    }
 }

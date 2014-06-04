@@ -47,6 +47,11 @@
             android:label="@string/title_activity_view_trip"
         />
         
+        <activity
+            android:name="SettingsActivity"
+            android:label="@string/title_activity_view_trip"
+        />
+        
         <service
             android:name="GPSService"
             android:exported="false"

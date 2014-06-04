@@ -109,6 +109,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	
     	tripHistory = new JSONArray();
     	
+    	// restore persistent data
+    	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
+    	timerStartTime = mPrefs.getLong("timerStartTime", 0);
+    	timerElapsedTime = mPrefs.getLong("timerElapsedTime", 0);
+    	activityState = mPrefs.getInt("activityState", STATE_IDLE);
+    	elapsedTime = mPrefs.getLong("elapsedTime", 0);
+    	
     	//try to load data from file
     	Log.d("load","trying to load file");
     	StringBuffer datax = new StringBuffer("");
@@ -136,20 +143,14 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	
     	try {
 			tripHistory = new JSONArray(datax.toString());
+			SharedPreferences.Editor ed = mPrefs.edit();
+			ed.putString("TRIPDATA", datax.toString());
+			ed.commit();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-
-    	
-    	// restore persistent data
-    	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
-    	timerStartTime = mPrefs.getLong("timerStartTime", 0);
-    	timerElapsedTime = mPrefs.getLong("timerElapsedTime", 0);
-    	activityState = mPrefs.getInt("activityState", STATE_IDLE);
-    	elapsedTime = mPrefs.getLong("elapsedTime", 0);
-  
     }
     
     @Override
@@ -289,10 +290,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_help) {
+			//Start up settings
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
 			return true;
 		} else if (id == R.id.action_history) {
 			Intent intent = new Intent(this, HistoryActivity.class);
-			intent.putExtra("tripHistory", tripHistory.toString());
+			//intent.putExtra("tripHistory", tripHistory.toString());
 			startActivity(intent);
 			return true;
 		}
@@ -438,17 +442,30 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		
     		JSONArray j = myService.getData();
     		Log.d("JSON DATA", j.toString());
+    		
+    		JSONArray tripData = new JSONArray();
+    		try {
+				tripData = new JSONArray(mPrefs.getString("TRIPDATA", "oh shit"));
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+    		
     		if(!j.toString().equals("[]"))
-    			tripHistory.put(j);
+    			tripData.put(j);
     		
     		Log.d("JSON DATA", tripHistory.toString());
+    		SharedPreferences.Editor ed = mPrefs.edit();
     		
-    		//TODO: check the json data to make sure that it is not empty before writing
+    		ed.remove("TRIPDATA");
+    		ed.putString("TRIPDATA", tripData.toString());
+    		ed.commit();
+    		
     		
     		FileOutputStream fos;
 			try {
 				fos = openFileOutput(fileName, Context.MODE_PRIVATE);
-	    		fos.write(tripHistory.toString().getBytes());
+	    		fos.write(tripData.toString().getBytes());
 	    		fos.close();
 	    		showToast("Trip Saved!");
 			} catch (FileNotFoundException e) {

@@ -86,17 +86,21 @@ public class GPSServiceTask implements Runnable{
     				distanceTraveled = 0;
     				totalElevation = 0;
     			}
-    			else {					//Do distance calculations once there has been more than one gps location polled.
+    			else {					
+    				//Do distance calculations once there has been more than one gps location polled.
     				float[] results = new float[3];
     				Location.distanceBetween(prevLat, prevLong, latitude, longitude, results);	//Distance between current and previous point
     				prevLat = latitude;		//Update long/lat values so the current values are now previous, to set up for the next pass
     				prevLong = longitude;
     				distanceTraveled += results[0];
+    				
+    				//Save data as JSON
     				JSONObject j = new JSONObject();
     				try {
 						j.put("lat", String.valueOf(latitude));
 						j.put("long", String.valueOf(longitude));
 						j.put("time", String.valueOf(System.currentTimeMillis()));
+						j.put("elev", String.valueOf(altitude));
 						tripData.put(j);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block

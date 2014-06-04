@@ -2,6 +2,7 @@ package cmps121.quadrant;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +36,9 @@ public class HistoryActivity extends Activity {
 	private ArrayList<GPSEntry> savedTrips;
 	private ListViewAdapter aa;
 	
+	// Persistent data
+    private SharedPreferences mPrefs;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,9 +49,11 @@ public class HistoryActivity extends Activity {
 		// initialize class members
 		savedTrips = new ArrayList<GPSEntry>();
 		
-		Intent intent = getIntent();
+		mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
+
 		try {
-			JSONArray tripData = new JSONArray(intent.getStringExtra("tripHistory").toString());
+			String data = mPrefs.getString("TRIPDATA", "oh shit");
+			JSONArray tripData = new JSONArray(data);
 			Log.d("JSON", "array made from extras");
 			for(int i = 0; i < tripData.length(); i++) {
 				Log.d("loop", "trying to add item to listview");
@@ -74,6 +81,7 @@ public class HistoryActivity extends Activity {
 		ListView myListView = (ListView) findViewById(R.id.listView1);
 		
 		// set the list view adapter
+		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
 		myListView.setAdapter(aa);
 		
 		// create a list item click handler
