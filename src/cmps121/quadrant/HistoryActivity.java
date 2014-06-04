@@ -1,5 +1,8 @@
 package cmps121.quadrant;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -46,9 +50,12 @@ public class HistoryActivity extends Activity {
 		// place an up button on the action bar to return to the record activity
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		
-		// initialize class members
 		savedTrips = new ArrayList<GPSEntry>();
-		
+		aa = new ListViewAdapter(this, R.layout.list_element, savedTrips);
+		ListView myListView = (ListView) findViewById(R.id.listView1);
+		myListView.setAdapter(aa);
+		// initialize class members
+
 		mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
 
 		try {
@@ -67,7 +74,7 @@ public class HistoryActivity extends Activity {
 					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 					String dateStarted = formatter.format(new Date(Long.parseLong(time)));
 				
-					g.something = dateStarted;
+					g.titleText = dateStarted;
 					savedTrips.add(g);
 				}
 			}
@@ -76,14 +83,9 @@ public class HistoryActivity extends Activity {
 			e.printStackTrace();
 		}
 		
-		
-		aa = new ListViewAdapter(this, R.layout.list_element, savedTrips);
-		ListView myListView = (ListView) findViewById(R.id.listView1);
-		
-		// set the list view adapter
 		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
-		myListView.setAdapter(aa);
-		
+
+		/*
 		// create a list item click handler
 		myListView.setOnItemClickListener(new OnItemClickListener() {
 		    public void onItemClick(AdapterView<?> parent,View view, int position, long id) 
@@ -95,7 +97,7 @@ public class HistoryActivity extends Activity {
 		    	i.putExtra("tripData", tripData);
 		    	startActivity(i);
 		    }
-		});
+		});*/
 		
 		// refresh the listview
 		aa.notifyDataSetChanged();
@@ -129,7 +131,7 @@ public class HistoryActivity extends Activity {
 		GPSEntry(JSONArray jArr) {
 			data = jArr;
 		}
-		String something;
+		String titleText;
 		JSONArray data;
 	}
 	
@@ -151,7 +153,7 @@ public class HistoryActivity extends Activity {
 		
 		@Override
 		// inflate an array element
-		public View getView(int position, View convertView, ViewGroup parent) {
+		public View getView(final int position, View convertView, ViewGroup parent) {
 			LinearLayout newView;
 			
 			GPSEntry w = getItem(position);
@@ -168,7 +170,61 @@ public class HistoryActivity extends Activity {
 			
 			// Fills in the view.
 			TextView tv = (TextView) newView.findViewById(R.id.listText);
-			tv.setText(w.something);
+			tv.setText(w.titleText);
+			
+			Button b1 = (Button) newView.findViewById(R.id.viewButton);
+			b1.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+			    	//Start mapview activity with data from this GPSEntry
+			    	Log.d("GPSEntryClicked", savedTrips.get(position).data.toString());
+			    	String tripData = savedTrips.get(position).data.toString();
+			    	Intent i = new Intent(getApplicationContext(), ViewTripActivity.class);
+			    	i.putExtra("tripData", tripData);
+			    	startActivity(i);
+				}
+			});
+			Button b = (Button) newView.findViewById(R.id.removeButton);
+			b.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					// Reacts to a button press.
+					// Gets the integer tag of the button.
+					String s = (String) v.getTag();
+					Log.d("tag value", "the value is: " + position);
+					//int pos = Integer.parseInt(s);
+					
+					//remove GPSEntry at index
+					savedTrips.remove(position);
+					aa.notifyDataSetChanged();
+					//Remake JSON array without removed values
+					JSONArray updatedTrips = new JSONArray();
+					for(int i = 0; i < savedTrips.size(); i++) {
+						GPSEntry g = savedTrips.get(i);
+						updatedTrips.put(g.data);
+					}
+					//update sharedprefs
+					SharedPreferences.Editor ed = mPrefs.edit();
+					ed.remove("TRIPDATA");
+					ed.putString("TRIPDATA", updatedTrips.toString());
+					ed.commit();
+					
+					//write file
+		    		FileOutputStream fos;
+					try {
+						fos = openFileOutput("TRIPDATA.TXT", Context.MODE_PRIVATE);
+			    		fos.write(updatedTrips.toString().getBytes());
+			    		fos.close();
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+			});
 
 			return newView;
 		}		
