@@ -2,16 +2,13 @@
 <resources>
 
     <string name="app_name">Quadrant GPS</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_help">Settings</string>
     <string name="action_history">History</string>
+    <string name="action_settings">Settings</string>
     <string name="title_activity_history">View Previous Trips</string>
-    <string name="gps_service_started">GPS service started (debug)</string>
-    <string name="gps_service_running">GPS service running (debug)</string>
-    <string name="notification_title">GPS Service</string>
-    <string name="record">RECORD</string>
-    <string name="title_activity_view_trip">Map View of Previous Trip</string>
+    <string name="gps_service_started">Recording started!</string>
+    <string name="gps_service_running">Now recording</string>
+    <string name="notification_title">Quadrant GPS</string>
+    <string name="title_activity_view_trip">Your Trip</string>
     <string name="title_activity_view_stats">Details</string>
-    <string name="title_activity_settings">Settings</string>
 
 </resources>

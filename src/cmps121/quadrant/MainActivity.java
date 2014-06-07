@@ -104,7 +104,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         elevationTextView = (TextView) findViewById(R.id.textView_elevationValue);
         distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
         velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
-        
     	recordButton = (Button) findViewById(R.id.button_record);
     	
     	tripHistory = new JSONArray();
@@ -132,13 +131,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 			fis.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(LOG_TAG, e.toString());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(LOG_TAG, e.toString());
 		}
 
-
+/*
     	Log.d("opening file", datax.toString());
     	
     	try {
@@ -150,7 +149,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+*/
     }
     
     @Override
@@ -184,7 +183,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	if (activityState == STATE_IDLE) {
     		//restore timer
     		tv.setText("00:00:00");
-    		
     	} else if(activityState == STATE_RECORDING) {
     		// restore timer
             int seconds = (int) (timerElapsedTime / 1000);
@@ -214,16 +212,16 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         	if (myService != null) {
         		myService.removeResultCallback(this);
         	}
-    		Log.i("GPS Service", "Unbinding");
+    		Log.d("GPS Service", "Unbinding");
     		unbindService(serviceConnection);
         	serviceBound = false;
 
         	// Keep watching the accelerometer when the app is paused
         	if (SERVICE_STOP_ON_PAUSE) {
-        		Log.i(LOG_TAG, "Stopping.");
+        		Log.d(LOG_TAG, "Stopping.");
         		Intent intent = new Intent(this, GPSService.class);
         		stopService(intent);
-        		Log.i(LOG_TAG, "Stopped.");
+        		Log.d(LOG_TAG, "Stopped.");
         	}
         }
         
@@ -289,7 +287,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_help) {
+		if (id == R.id.action_settings) {
 			//Start up settings
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
@@ -306,7 +304,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     // attempt to bind to MyService
     private void bindMyService() {
     	Intent intent = new Intent(this, GPSService.class);
-    	Log.i("LOG_TAG", "Trying to bind");
+    	Log.d("LOG_TAG", "Trying to bind");
     	bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
     
@@ -320,7 +318,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		myService = binder.getService();
     		serviceBound = true;
     		// Let's connect the callbacks.
-    		Log.i("GPS Service", "Bound succeeded, adding the callback");
+    		Log.d("GPS Service", "Bound succeeded, adding the callback");
     		myService.addResultCallback(MainActivity.this);
     	}
     	
@@ -336,9 +334,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
      */
     @Override
     public void onResultReady(ServiceResult result) {
-    	if (result != null) {
-    		//Log.i(LOG_TAG, "Preparing a message for " + result.curAccel);
-    	} else {
+    	if (result == null) {
     		Log.e(LOG_TAG, "Received an empty result!");
     	}
         mUiHandler.obtainMessage(MESSAGE_NUMBER, result).sendToTarget();
@@ -356,22 +352,15 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             	ServiceResult result = (ServiceResult) message.obj;
             	// Displays it.
             	if (result != null) {
-            		//Log.i(LOG_TAG, "Displaying: " + result.curAccel);
             		
             		// UPDATE GUI with service result here
-            		String elev = String.format("%.2f", result.elevation);
-            		String dist = String.format("%.2f", result.distance);
-            		elevationTextView.setText(elev);
-            		distanceTextView.setText(dist);
+            		String elevation = String.format("%.2f", result.elevation * 3.28084);
+            		String distance = String.format("%.2f", result.distance * 0.000621371);
+            		String speed = String.format("%.2f", result.speed * 2.23694);
             		
-            		double mi = result.distance;
-            		double h = (double) elapsedTime / (1000 * 60 * 60);
-            		double mph = mi/h;
-            		Log.d("time",  "" + elapsedTime);
-            		
-            		String velocity = String.format("%.2f", mph);
-            		velocityTextView.setText(velocity);
-
+            		elevationTextView.setText(elevation);
+            		distanceTextView.setText(distance);
+            		velocityTextView.setText(speed);
             		
             		// Tell the worker that the bitmap is ready to be reused
             		if (serviceBound && myService != null) {
@@ -404,6 +393,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         	showToast("Now Recording");
     	} else if (activityState == STATE_RECORDING) {
     		activityState = STATE_PAUSED;
+    		myService.notifyPaused();
     		recordButton.setBackgroundResource(R.drawable.record_button_resume);
     		// Pause the timer
     		timerHandler.removeCallbacks(timerRunnable);
@@ -432,7 +422,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 	    	//Reset clock
     		timerElapsedTime = 0;
     		
-    		
     		//update state, button
     		activityState = STATE_IDLE;
     		recordButton.setBackgroundResource(R.drawable.rec_button);
@@ -445,10 +434,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		
     		JSONArray tripData = new JSONArray();
     		try {
-				tripData = new JSONArray(mPrefs.getString("TRIPDATA", "oh shit"));
+				tripData = new JSONArray(mPrefs.getString("TRIPDATA", "[]"));
 			} catch (JSONException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				Log.d(LOG_TAG, e1.toString());
 			}
     		
     		if(!j.toString().equals("[]"))
@@ -460,7 +448,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		ed.remove("TRIPDATA");
     		ed.putString("TRIPDATA", tripData.toString());
     		ed.commit();
-    		
     		
     		FileOutputStream fos;
 			try {
@@ -475,25 +462,23 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
     		// stop the service
-    		
 	    	if (serviceBound) {
 	        	if (myService != null) {
 	        		myService.removeResultCallback(this);
 	        	}
-	    		Log.i("GPSService", "Unbinding");
+	    		Log.d("GPSService", "Unbinding");
 	    		unbindService(serviceConnection);
 	        	serviceBound = false;
 	
-	        	Log.i(LOG_TAG, "Stopping GPS Service...");
+	        	Log.d(LOG_TAG, "Stopping GPS Service.");
 	        	Intent intent = new Intent(this, GPSService.class);
 	        	stopService(intent);
-	        	Log.i(LOG_TAG, "Stopped  GPS Service.");
+	        	Log.d(LOG_TAG, "Stopped GPS Service.");
 	        }
-	    	
-	    	showToast("GPS Service stopped");
     	} else {
-    		showToast("Nothing to finish");
+    		showToast("You're not recording.  Doh!");
     	}
     }
     

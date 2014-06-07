@@ -47,19 +47,21 @@ public class HistoryActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_history);
-		// place an up button on the action bar to return to the record activity
+		
+		// place an up button on the action bar to return to the main activity
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		
+		// initialize ListView
 		savedTrips = new ArrayList<GPSEntry>();
 		aa = new ListViewAdapter(this, R.layout.list_element, savedTrips);
 		ListView myListView = (ListView) findViewById(R.id.listView1);
 		myListView.setAdapter(aa);
+		
 		// initialize class members
-
 		mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
 
 		try {
-			String data = mPrefs.getString("TRIPDATA", "oh shit");
+			String data = mPrefs.getString("TRIPDATA", "[]");
 			JSONArray tripData = new JSONArray(data);
 			Log.d("JSON", "array made from extras");
 			for(int i = 0; i < tripData.length(); i++) {
@@ -108,9 +110,6 @@ public class HistoryActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_help) {
-			return true;
-		}
 		return super.onOptionsItemSelected(item);
 	}
 	

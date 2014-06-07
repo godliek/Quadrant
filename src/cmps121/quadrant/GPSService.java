@@ -132,4 +132,8 @@ public class GPSService extends Service {
     public JSONArray getData() {
     	return myTask.getTripData();
     }
+
+	public void notifyPaused() {
+		myTask.notifyPaused();
+	}
 }

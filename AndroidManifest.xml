@@ -10,17 +10,20 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-	
+	<uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+	<uses-feature
+    	android:glEsVersion="0x00020000"
+    	android:required="true" />
     
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/QuadrantActionBarTheme" >
+        android:theme="@style/QuadrantActionBarTheme"
+        android:hardwareAccelerated="true" >
         
         <uses-library
         	android:name="com.google.android.maps"
@@ -41,22 +44,18 @@
             android:configChanges="keyboardHidden|orientation"
             android:parentActivityName="MainActivity" >
         </activity>
-        
         <activity
             android:name="ViewTripActivity"
-            android:label="@string/title_activity_view_trip"
-        />
-        
+            android:label="@string/title_activity_view_trip" >
+        </activity>
         <activity
             android:name="SettingsActivity"
-            android:label="@string/title_activity_view_trip"
-        />
-        
-         <activity
+            android:label="@string/title_activity_view_trip" >
+        </activity>
+        <activity
             android:name="ViewStatsActivity"
-            android:label="@string/title_activity_view_stats"
-        />
-        
+            android:label="@string/title_activity_view_stats" >
+        </activity>
         <service
             android:name="GPSService"
             android:exported="false"
@@ -66,7 +65,7 @@
         <!-- Goolge Maps API Key -->
 		<meta-data
      		android:name="com.google.android.maps.v2.API_KEY"
-     		android:value="AIzaSyCOZVdJgWFL4lpf9j79rMdYzGM8f-gy-Nk" />
+     		android:value="AIzaSyBA2VURAdVKirFWQqO_QO6G-f3doIn2y8o" />
 		<meta-data 
 		    android:name="com.google.android.gms.version" 
 		    android:value="@integer/google_play_services_version"/>
