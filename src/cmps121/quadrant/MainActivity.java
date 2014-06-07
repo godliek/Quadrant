@@ -130,14 +130,11 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             }
 			fis.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			Log.d(LOG_TAG, e.toString());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			Log.d(LOG_TAG, e.toString());
 		}
 
-/*
     	Log.d("opening file", datax.toString());
     	
     	try {
@@ -146,10 +143,8 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 			ed.putString("TRIPDATA", datax.toString());
 			ed.commit();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(LOG_TAG, e.toString());
 		}
-*/
     }
     
     @Override
@@ -243,7 +238,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
  		    //Ask the user to enable GPS
  		    AlertDialog.Builder builder = new AlertDialog.Builder(this);
  		    builder.setTitle("Location Manager");
- 		    builder.setMessage("This application requires GPS Location data.  Would you like to enable GPS?");
+ 		    builder.setMessage("This application requires GPS location data.  Would you like to enable GPS?");
  		    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
  		        @Override
  		        public void onClick(DialogInterface dialog, int which) {
@@ -270,7 +265,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
  		//Ask the user to enable GPS
  	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
  	    builder.setTitle("Warning");
- 	    builder.setMessage("Your device does not support GPS location services.  Press OK to exit.");
+ 	    builder.setMessage("Your device does not support GPS location.  Press OK to exit.");
  	    builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
  	        @Override
  	        public void onClick(DialogInterface dialog, int which) {
@@ -390,7 +385,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		timerStartTime = System.currentTimeMillis();
             timerHandler.postDelayed(timerRunnable, 0);
             
-        	showToast("Now Recording");
+        	showToast("Recording");
     	} else if (activityState == STATE_RECORDING) {
     		activityState = STATE_PAUSED;
     		myService.notifyPaused();
@@ -456,11 +451,9 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 	    		fos.close();
 	    		showToast("Trip Saved!");
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.d(LOG_TAG, e.toString());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.d(LOG_TAG, e.toString());
 			}
 
     		// stop the service

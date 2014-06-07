@@ -157,12 +157,6 @@ public class GPSData {
 				j.put("elev", String.valueOf(gpsList.get(i).altitude));
 				j.put("totalElev", String.valueOf(getElevation() * 3.28084));
 				j.put("totalDistance", String.valueOf(getDistance() * 0.000621371));
-				/*
-				j.put("latitude", String.valueOf(gpsList.get(i).latitude));
-				j.put("longitude", String.valueOf(gpsList.get(i).longitude));
-				j.put("altitude", String.valueOf(gpsList.get(i).altitude));
-				j.put("time", String.valueOf(gpsList.get(i).time));
-				*/
 				jArray.put(j);
 			} catch (JSONException e) {
 				Log.d(LOG_TAG, "ERROR toJSONArray()");

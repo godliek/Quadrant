@@ -8,9 +8,4 @@ public class ServiceResult {
 	public double speed;
 	public double elevation;
 	
-	// remove later
-	public double latitude;
-	public double longitude;
-	public double altitude;
-	public long time;
 }

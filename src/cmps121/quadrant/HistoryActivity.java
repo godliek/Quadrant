@@ -37,6 +37,7 @@ import android.os.Build;
 
 public class HistoryActivity extends Activity {
 
+	private static final String LOG_TAG = "History";
 	private ArrayList<GPSEntry> savedTrips;
 	private ListViewAdapter aa;
 	
@@ -86,8 +87,7 @@ public class HistoryActivity extends Activity {
 				}
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(LOG_TAG, e.toString());
 		}
 		
 		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
@@ -195,11 +195,9 @@ public class HistoryActivity extends Activity {
 			    		fos.write(updatedTrips.toString().getBytes());
 			    		fos.close();
 					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.d(LOG_TAG, e.toString());
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.d(LOG_TAG, e.toString());
 					}
 
 				}

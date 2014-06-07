@@ -1,23 +1,12 @@
 package cmps121.quadrant;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -36,7 +25,6 @@ public class GPSServiceTask implements Runnable{
     // Location data
     private LocationManager myLocationManager;
     private LocationListener myLocationListener;
-    private Criteria criteria;
     private double latitude;
     private double longitude;
     private double altitude;
@@ -44,14 +32,11 @@ public class GPSServiceTask implements Runnable{
     
     // this data structure contains everything about the trip
     private GPSData locationData;
-    
-	private JSONArray tripData;
 	
 	// Constructor
     public GPSServiceTask(Context _context) {
     	context = _context;
     	locationData = new GPSData();
-    	tripData = new JSONArray();
     	myLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
     	myLocationListener = new LocationListener() {
     		
@@ -66,25 +51,6 @@ public class GPSServiceTask implements Runnable{
     			
     			Log.d(LOG_TAG, "LAT: " + latitude + "LONG: " + longitude + "ELEV: " + altitude);
     			
-    			/*
-    				
-				//Save data as JSON
-				JSONObject j = new JSONObject();
-				try {
-					j.put("lat", String.valueOf(latitude));
-					j.put("long", String.valueOf(longitude));
-					j.put("time", String.valueOf(System.currentTimeMillis()));
-					j.put("elev", String.valueOf(altitude));
-					j.put("totalElev", String.valueOf(totalElevation * 3.28084));
-					j.put("totalDistance", String.valueOf(distanceTraveled * 0.000621371));
-					
-					tripData.put(j);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-				
-				*/
     		}
 
 			@Override
@@ -159,15 +125,15 @@ public class GPSServiceTask implements Runnable{
         running = false;
         //stop requesting updates
         myLocationManager.removeUpdates(myLocationListener);
+        locationData.clear();
     }
     public void startProcessing() {
     	Log.d("service control", "service resumed");
     	running = true;
     	//request updates
-    	String best = myLocationManager.getBestProvider(criteria, false);
 		long time = 2000;	//Time interval for GPS polling
 		float minDist = 5;	//Minimum distance to travel between pollings.
-		myLocationManager.requestLocationUpdates(best, time, minDist, myLocationListener);
+		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, time, minDist, myLocationListener);
     }
 
 
@@ -184,13 +150,6 @@ public class GPSServiceTask implements Runnable{
     			result.distance = locationData.getDistance();
     			result.elevation = locationData.getElevation();
     			result.speed = locationData.getAverageSpeed();
-    			
-/* remove later */
-    			result.latitude = latitude;
-    			result.longitude = longitude;
-    			result.altitude = altitude;
-    			result.time = pollingTime;
-/* remove later */
     			
     			for (ResultCallback resultCallback : resultCallbacks) {
     				resultCallback.onResultReady(result);

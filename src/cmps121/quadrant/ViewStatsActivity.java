@@ -10,11 +10,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class ViewStatsActivity extends Activity{
+	private static final String LOG_TAG = "Stats";
 	private ListView listView;
 	private ArrayList<String> listEntries;
 	private ArrayAdapter arrAdapter;
@@ -63,8 +65,7 @@ public class ViewStatsActivity extends Activity{
 			}
 			
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.d(LOG_TAG, e.toString());
 		}
         arrAdapter.notifyDataSetChanged();
     }
