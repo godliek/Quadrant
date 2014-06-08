@@ -58,6 +58,8 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 	/** The chart view that displays the data. */
 	private GraphicalView mChartView;
 	
+	private LinearLayout layout;
+	
 	private static final String LOG_TAG = "GraphFragment";
 	
     private SharedPreferences mPrefs;
@@ -98,6 +100,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         mRenderer.setMargins(new int[] { 20, 30, 15, 0 });
         mRenderer.setZoomButtonsVisible(true);
         mRenderer.setPointSize(5);
+        mRenderer.setPanEnabled(false, false);
         
 
         List<Double> elevations = new ArrayList<Double>();
@@ -172,7 +175,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		mCurrentRenderer = new XYSeriesRenderer();
  		mRenderer.addSeriesRenderer(mCurrentRenderer);
  		
- 		LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
+ 		layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
  		
  		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
  		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
@@ -204,18 +207,21 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 					if(graphType.equals("Elevation Over Time")) {
 						Log.d("testData", "" + i + ": " + jObj.getString("elev"));
 						graphData = Double.parseDouble(jObj.getString("elev"));
+						series.add(i, graphData);
 					} else {
 						if(graphType.equals("Total Elevation Over Time")) {
 							Log.d("testData", "" + i + ": " + jObj.getString("totalElev"));
 							graphData = Double.parseDouble(jObj.getString("totalElev"));
+							series.add(i, graphData);
 						} else {
 							if(graphType.equals("Distance Over Time")) {
 								Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
 								graphData = Double.parseDouble(jObj.getString("totalDistance"));
+								series.add(i, graphData);
 							}
 						}
 					}
-					series.add(i,  graphData);
+					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -223,7 +229,9 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 	 			
 	 		}
 	 		mDataset.addSeries(series);
-	 		mChartView.repaint();
+	 		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
+	 		layout.removeAllViews();
+	 		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		} 
 
 	@Override
