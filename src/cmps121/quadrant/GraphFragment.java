@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
-import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -17,16 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-
-
-
-
-
-
-
-
-import cmps121.quadrant.TripFragment.GPSEntry;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -101,6 +90,8 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         mRenderer.setZoomButtonsVisible(true);
         mRenderer.setPointSize(5);
         mRenderer.setPanEnabled(false, false);
+        mRenderer.setShowGrid(true);
+        
  
 
         List<Double> elevations = new ArrayList<Double>();
@@ -148,7 +139,6 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         graphTypes.add("Elevation Over Time");
         graphTypes.add("Total Elevation Gain Over Time");
         graphTypes.add("Distance Over Time");
-        graphTypes.add("Average Speed Over Time");
         
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,graphTypes);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -175,6 +165,8 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		
  		mDataset.addSeries(series);
  		mCurrentRenderer = new XYSeriesRenderer();
+ 		mCurrentRenderer.setLineWidth(5);
+ 		mCurrentRenderer.setColor(Color.argb(100, 18, 179, 12));
  		mRenderer.addSeriesRenderer(mCurrentRenderer);
  		
  		layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
@@ -202,6 +194,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 		//Generate new graph
 			JSONArray jArr = g.data;
 			Log.d("testData", jArr.toString());
+			mRenderer.setXLabels(8);
 	 		for(int i = 0; i < jArr.length(); i++) {
 	 			int time = i *2;
 	 			try {
@@ -227,10 +220,6 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 								series.add(time, graphData);
 								mRenderer.setXTitle("Time (s)");
 						        mRenderer.setYTitle("Distance (mi)");
-							} else {
-								if(graphType.equals("Average Speed Over Time")) {
-									Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
-								}
 							}
 						}
 					}
@@ -252,9 +241,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 		// TODO Auto-generated method stub
 		
 	}
-	
 
-	
 	/** GPSEntry
 	 *    ListView element
 	 */
