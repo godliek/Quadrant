@@ -155,19 +155,20 @@ public class TripFragment extends Fragment implements OnItemSelectedListener {
 		
 		for (int i = 0; i < data.size(); i++) {
 			LatLng location = new LatLng(data.getLatitude(i), data.getLongitude(i));
-			
+			String time = data.getTimeString(i);
 			//Add coordinates to polyline
 			options.add(location);
 			// drop a marker at the start and end locations
 			if (i == 0) {
 				tripStart = location;
-				MarkerOptions marker = new MarkerOptions().position(tripStart).title("Start").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+				MarkerOptions marker = new MarkerOptions().position(tripStart).title("Start: " + time).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 				googleMap.addMarker(marker);
 				
 			}
 			if (i == data.size() - 1) {
 				tripEnd = location;
-				MarkerOptions marker = new MarkerOptions().position(tripEnd).title("End");
+				MarkerOptions marker = new MarkerOptions().position(tripEnd).title("End: " + time);
 				googleMap.addMarker(marker);
 			}
 			bounds.include(new LatLng(data.getLatitude(i), data.getLongitude(i)));

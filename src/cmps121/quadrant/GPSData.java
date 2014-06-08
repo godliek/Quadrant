@@ -24,6 +24,7 @@ import android.util.Log;
  *		getElapsedTime()
  *		getLatitude()
  *		getLongitude()
+ *		getTimeString()
  *		size()
  *		toJSONArray()
  *		fromJSONArray()
@@ -241,10 +242,14 @@ public class GPSData {
 		return false;
 	}
 	
-    private static String getTimeFromEpoch(String epoch) {
+    public static String getTimeFromEpoch(String epoch) {
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 		String currentTime = formatter.format(new Date(Long.parseLong(epoch)));
 		return currentTime;
+    }
+    
+    public String getTimeString(int index) {
+    	return gpsList.get(index).timeString;
     }
 	
 	/** GPSNode
@@ -256,11 +261,13 @@ public class GPSData {
 			longitude = lon;
 			altitude = alt;
 			time = t;
+			timeString = GPSData.getTimeFromEpoch(Long.toString(t));
 		};
 		
 		public double longitude;
 		public double latitude;
 		public double altitude;
 		public long time;
+		public String timeString;
 	}
 }
