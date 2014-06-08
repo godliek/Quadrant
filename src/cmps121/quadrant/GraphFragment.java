@@ -58,7 +58,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 	/** The chart view that displays the data. */
 	private GraphicalView mChartView;
 	
-	private static final String LOG_TAG = "TripFragment";
+	private static final String LOG_TAG = "GraphFragment";
 	
     private SharedPreferences mPrefs;
 
@@ -128,7 +128,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  				}
  			}
  		} catch (JSONException e) {
- 			Log.d(LOG_TAG, e.toString());
+ 			e.printStackTrace();
  		}
  		Collections.reverse(elevations);
  		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
@@ -149,7 +149,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,graphTypes);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         typeSpinner.setAdapter(typeAdapter);
-        tripSpinner.setOnItemSelectedListener(this);   		//CHANGE THIS
+        typeSpinner.setOnItemSelectedListener(this);
         typeAdapter.notifyDataSetChanged();
         
  		GPSEntry g = savedTrips.get(0);
@@ -176,22 +176,55 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		
  		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
  		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
- 		//mChartView.repaint();
- 		// setup spinner
- 		/*
-        Spinner mySpinner = (Spinner) getView().findViewById(R.id.trip_spinner);
-        ArrayAdapter<GPSEntry> adapter = new ArrayAdapter<GPSEntry>(getActivity(), android.R.layout.simple_spinner_item, savedTrips);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mySpinner.setAdapter(adapter); 
-        mySpinner.setOnItemSelectedListener(this);
-        adapter.notifyDataSetChanged();*/
 	}
 	
    
 	@Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 		Log.d(LOG_TAG, "spinner entry selected");
-    }
+		//Clear graph data
+		mDataset.clear();
+		
+		//Get index of selected items
+		Log.d("trip spinner", "Trip Index Selected: " + tripSpinner.getSelectedItemPosition());
+		GPSEntry g = savedTrips.get(tripSpinner.getSelectedItemPosition());
+		Log.d("type spinner","Graph Index Selected: " + typeSpinner.getSelectedItemPosition());
+		String graphType = typeSpinner.getSelectedItem().toString();
+		XYSeries series = new XYSeries(graphType);
+		
+		
+		
+		//Generate new graph
+			JSONArray jArr = g.data;
+			Log.d("testData", jArr.toString());
+	 		for(int i = 0; i < jArr.length(); i++) {
+	 			try {
+					JSONObject jObj = jArr.getJSONObject(i);
+					double graphData = 0;
+					if(graphType.equals("Elevation Over Time")) {
+						Log.d("testData", "" + i + ": " + jObj.getString("elev"));
+						graphData = Double.parseDouble(jObj.getString("elev"));
+					} else {
+						if(graphType.equals("Total Elevation Over Time")) {
+							Log.d("testData", "" + i + ": " + jObj.getString("totalElev"));
+							graphData = Double.parseDouble(jObj.getString("totalElev"));
+						} else {
+							if(graphType.equals("Distance Over Time")) {
+								Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
+								graphData = Double.parseDouble(jObj.getString("totalDistance"));
+							}
+						}
+					}
+					series.add(i,  graphData);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	 			
+	 		}
+	 		mDataset.addSeries(series);
+	 		mChartView.repaint();
+		} 
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
