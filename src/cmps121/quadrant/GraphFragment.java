@@ -146,20 +146,25 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         typeSpinner.setOnItemSelectedListener(this);
         typeAdapter.notifyDataSetChanged();
         
- 		GPSEntry g = savedTrips.get(0);
- 		
+        
  		XYSeries series = new XYSeries("Elevation Over Time");
- 		JSONArray jArr = g.data;
- 		for(int i = 0; i < jArr.length(); i++) {
- 			try {
-				JSONObject jObj = jArr.getJSONObject(i);
-				Log.d("testData", "" + i + ": " + jObj.getString("elev"));
-				series.add(i, Double.parseDouble(jObj.getString("elev")));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
- 		}
+ 		
+ 		// cant get from an array if its empty or crash
+        if (savedTrips.size() > 0) {
+	 		GPSEntry g = savedTrips.get(0);
+	 		
+	 		JSONArray jArr = g.data;
+	 		for(int i = 0; i < jArr.length(); i++) {
+	 			try {
+					JSONObject jObj = jArr.getJSONObject(i);
+					Log.d("testData", "" + i + ": " + jObj.getString("elev"));
+					series.add(i, Double.parseDouble(jObj.getString("elev")));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
+	 		}
+        }
  		mRenderer.setXTitle("Time");
         mRenderer.setYTitle("Elevation (ft)");
  		
@@ -178,6 +183,10 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
    
 	@Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		
+		// crash app...
+		if (savedTrips.size() == 0) return;
+		
 		Log.d(LOG_TAG, "spinner entry selected");
 		//Clear graph data
 		mDataset.clear();

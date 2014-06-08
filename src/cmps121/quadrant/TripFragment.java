@@ -167,7 +167,8 @@ public class TripFragment extends Fragment implements OnItemSelectedListener {
 			if (i == 0) {
 				tripStart = location;
 
-				MarkerOptions marker = new MarkerOptions().position(tripStart).title("Start: " + time).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+				MarkerOptions marker = new MarkerOptions().position(tripStart).title("Start: " + time)
+						.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 				googleMap.addMarker(marker);
 				
 			}
