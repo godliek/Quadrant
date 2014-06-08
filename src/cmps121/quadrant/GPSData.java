@@ -90,6 +90,7 @@ public class GPSData {
 			prevLatitude = curLatitude;
 			prevLongitude = curLongitude;
 			prevTime = curTime;
+			gpsList.get(i).totalDistance = distance;
 		}
 		return distance;
 	}
@@ -102,7 +103,7 @@ public class GPSData {
 		if (gpsList.size() < 2) {
 			return 0.0;
 		}
-		
+		double totalElevationGain = 0;
 		prevAltitude = gpsList.get(0).altitude;
 		prevTime = gpsList.get(0).time;
 		for (int i = 1; i < gpsList.size(); i++) {
@@ -111,8 +112,12 @@ public class GPSData {
 			if (!isPaused(prevTime, curTime)) {
 				delta += curAltitude - prevAltitude;
 			}
+			if(curAltitude > prevAltitude) {
+				totalElevationGain += (curAltitude - prevAltitude);
+			}
 			prevTime = curTime;
 			prevAltitude = curAltitude;
+			gpsList.get(i).totalElev = totalElevationGain;
 		}
 		
 		return delta;
@@ -167,7 +172,8 @@ public class GPSData {
 	public JSONArray toJSONArray() {
 		if (gpsList.size() == 0)
 			return null;
-		
+		getElevation();
+		getDistance();
 		JSONArray jArray = new JSONArray();
 		for (int i = 0; i < gpsList.size(); i++) {
 			JSONObject j = new JSONObject();
@@ -176,8 +182,8 @@ public class GPSData {
 				j.put("long", String.valueOf(gpsList.get(i).longitude));
 				j.put("time", String.valueOf(gpsList.get(i).time));
 				j.put("elev", String.valueOf(gpsList.get(i).altitude));
-				j.put("totalElev", String.valueOf(getElevation() * 3.28084));
-				j.put("totalDistance", String.valueOf(getDistance() * 0.000621371));
+				j.put("totalElev", String.valueOf(gpsList.get(i).totalElev * 3.28084));
+				j.put("totalDistance", String.valueOf(gpsList.get(i).totalDistance * 0.000621371));
 				jArray.put(j);
 			} catch (JSONException e) {
 				Log.d(LOG_TAG, "ERROR toJSONArray()\n" + e.toString());
@@ -269,5 +275,7 @@ public class GPSData {
 		public double altitude;
 		public long time;
 		public String timeString;
+		public double totalDistance;
+		public double totalElev;
 	}
 }

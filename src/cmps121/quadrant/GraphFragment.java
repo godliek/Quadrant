@@ -146,8 +146,9 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         //Set up spinner items for graph types
         ArrayList<String> graphTypes = new ArrayList();
         graphTypes.add("Elevation Over Time");
-        graphTypes.add("Total Elevation Over Time");
+        graphTypes.add("Total Elevation Gain Over Time");
         graphTypes.add("Distance Over Time");
+        graphTypes.add("Average Speed Over Time");
         
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,graphTypes);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -202,29 +203,34 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 			JSONArray jArr = g.data;
 			Log.d("testData", jArr.toString());
 	 		for(int i = 0; i < jArr.length(); i++) {
+	 			int time = i *2;
 	 			try {
 					JSONObject jObj = jArr.getJSONObject(i);
 					double graphData = 0;
 					if(graphType.equals("Elevation Over Time")) {
 						Log.d("testData", "" + i + ": " + jObj.getString("elev"));
 						graphData = Double.parseDouble(jObj.getString("elev"));
-						series.add(i, graphData);
-						mRenderer.setXTitle("Time");
+						series.add(time, graphData);
+						mRenderer.setXTitle("Time (s)");
 				        mRenderer.setYTitle("Elevation (ft)");
 					} else {
-						if(graphType.equals("Total Elevation Over Time")) {
+						if(graphType.equals("Total Elevation Gain Over Time")) {
 							Log.d("testData", "" + i + ": " + jObj.getString("totalElev"));
 							graphData = Double.parseDouble(jObj.getString("totalElev"));
-							series.add(i, graphData);
-							mRenderer.setXTitle("Time");
-					        mRenderer.setYTitle("Total Elevation Change(ft)");
+							series.add(time, graphData);
+							mRenderer.setXTitle("Time (s)");
+					        mRenderer.setYTitle("Total Elevation Gain(ft)");
 						} else {
 							if(graphType.equals("Distance Over Time")) {
 								Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
 								graphData = Double.parseDouble(jObj.getString("totalDistance"));
-								series.add(i, graphData);
-								mRenderer.setXTitle("Time");
+								series.add(time, graphData);
+								mRenderer.setXTitle("Time (s)");
 						        mRenderer.setYTitle("Distance (mi)");
+							} else {
+								if(graphType.equals("Average Speed Over Time")) {
+									Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
+								}
 							}
 						}
 					}
