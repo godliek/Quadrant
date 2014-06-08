@@ -97,11 +97,11 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         mRenderer.setChartTitleTextSize(20);
         mRenderer.setLabelsTextSize(15);
         mRenderer.setLegendTextSize(15);
-        mRenderer.setMargins(new int[] { 20, 30, 15, 0 });
+        mRenderer.setMargins(new int[] { 20, 45, 15, 0 });
         mRenderer.setZoomButtonsVisible(true);
         mRenderer.setPointSize(5);
         mRenderer.setPanEnabled(false, false);
-        
+ 
 
         List<Double> elevations = new ArrayList<Double>();
  		try {
@@ -167,9 +167,10 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
- 			
+			}	
  		}
+ 		mRenderer.setXTitle("Time");
+        mRenderer.setYTitle("Elevation (ft)");
  		
  		mDataset.addSeries(series);
  		mCurrentRenderer = new XYSeriesRenderer();
@@ -208,16 +209,22 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 						Log.d("testData", "" + i + ": " + jObj.getString("elev"));
 						graphData = Double.parseDouble(jObj.getString("elev"));
 						series.add(i, graphData);
+						mRenderer.setXTitle("Time");
+				        mRenderer.setYTitle("Elevation (ft)");
 					} else {
 						if(graphType.equals("Total Elevation Over Time")) {
 							Log.d("testData", "" + i + ": " + jObj.getString("totalElev"));
 							graphData = Double.parseDouble(jObj.getString("totalElev"));
 							series.add(i, graphData);
+							mRenderer.setXTitle("Time");
+					        mRenderer.setYTitle("Total Elevation Change(ft)");
 						} else {
 							if(graphType.equals("Distance Over Time")) {
 								Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
 								graphData = Double.parseDouble(jObj.getString("totalDistance"));
 								series.add(i, graphData);
+								mRenderer.setXTitle("Time");
+						        mRenderer.setYTitle("Distance (mi)");
 							}
 						}
 					}
