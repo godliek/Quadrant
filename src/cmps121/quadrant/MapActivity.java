@@ -112,7 +112,7 @@ public class MapActivity extends FragmentActivity {
             case 0:
             	return new TripFragment();
             case 1:
-                return new TextFragment();
+                return new GraphFragment();
             default:
                 return null;
             }
