@@ -125,7 +125,7 @@ public class GPSServiceTask implements Runnable{
         running = false;
         //stop requesting updates
         myLocationManager.removeUpdates(myLocationListener);
-        locationData.clear();
+        
     }
     public void startProcessing() {
     	Log.d("service control", "service resumed");
@@ -135,7 +135,6 @@ public class GPSServiceTask implements Runnable{
 		float minDist = 5;	//Minimum distance to travel between pollings.
 		myLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, time, minDist, myLocationListener);
     }
-
 
     // Return the most current location data to the main activity.
     private void notifyResultCallback() {

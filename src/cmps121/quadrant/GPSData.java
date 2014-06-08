@@ -1,6 +1,8 @@
 package cmps121.quadrant;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +22,11 @@ import android.util.Log;
  *		getElevation()
  *		getAverageSpeed()
  *		getElapsedTime()
+ *		getLatitude()
+ *		getLongitude()
+ *		size()
  *		toJSONArray()
+ *		fromJSONArray()
  *		clear()		
  *
  *		TODO:
@@ -141,6 +147,20 @@ public class GPSData {
 		return elapsedTime;
 	}
 	
+	// return latitude
+	public double getLatitude(int index) {
+		return gpsList.get(index).latitude;
+	}
+	
+	// return longitude
+	public double getLongitude(int index) {
+		return gpsList.get(index).longitude;
+	}
+	
+	// return number of locations
+	public double size() {
+		return gpsList.size();
+	}
 	
 	// Convert the sequence into a JSONArray
 	public JSONArray toJSONArray() {
@@ -159,10 +179,32 @@ public class GPSData {
 				j.put("totalDistance", String.valueOf(getDistance() * 0.000621371));
 				jArray.put(j);
 			} catch (JSONException e) {
-				Log.d(LOG_TAG, "ERROR toJSONArray()");
+				Log.d(LOG_TAG, "ERROR toJSONArray()\n" + e.toString());
 			}
 		}
 		return jArray;
+	}
+	
+	// Returns a GPSData object constructed from a JSONArray
+	public static GPSData fromJSONArray(JSONArray jArray) {
+		GPSData data = new GPSData();
+		
+		try {
+			// iterate through the JSONArray
+			for(int i = 0; i < jArray.length(); i++) {
+				JSONObject jObj = jArray.getJSONObject(i);
+				//get data from JSON
+				double lat = Double.parseDouble(jObj.get("lat").toString());
+				double lng = Double.parseDouble(jObj.get("long").toString());
+				double elev = Double.parseDouble(jObj.getString("elev").toString());
+				long time = Long.parseLong(jObj.getString("time"));
+				
+				data.insertLocation(lat, lng, elev, time);
+			}
+		} catch (JSONException e) {
+			Log.d(LOG_TAG, "ERROR fromJSONArray()\n" + e.toString());
+		}
+		return data;
 	}
 	
 	// clear location and pause data.
@@ -198,6 +240,12 @@ public class GPSData {
 		}
 		return false;
 	}
+	
+    private static String getTimeFromEpoch(String epoch) {
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+		String currentTime = formatter.format(new Date(Long.parseLong(epoch)));
+		return currentTime;
+    }
 	
 	/** GPSNode
 	 * 		list node for polled GPS data

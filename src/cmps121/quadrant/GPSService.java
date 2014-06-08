@@ -24,7 +24,7 @@ import android.widget.Toast;
 
 public class GPSService extends Service {
 	
-    private static final String LOG_TAG = "GPSService";
+    private static final String LOG_TAG = "GPS Service";
 
     // Handle to notification manager.
     private NotificationManager notificationManager;
@@ -84,10 +84,10 @@ public class GPSService extends Service {
     public void onDestroy() {
         // Cancel the persistent notification.
         notificationManager.cancel(ONGOING_NOTIFICATION_ID);
-        Log.i(LOG_TAG, "Stopping.");
+        Log.i(LOG_TAG, "GPS Service stopping");
         // Stops the motion detector.
         myTask.stopProcessing();
-        Log.i(LOG_TAG, "Stopped.");
+        Log.i(LOG_TAG, "GPS Service destoryed");
     }
     
     // Interface to be able to subscribe to the bitmaps by the service.

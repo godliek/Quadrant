@@ -10,5 +10,9 @@
     <string name="notification_title">Quadrant GPS</string>
     <string name="title_activity_view_trip">Your Trip</string>
     <string name="title_activity_view_stats">Details</string>
+    <string name="title_activity_map">MapActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="swipe">Swipe</string>
+    <string name="error">Error</string>
 
 </resources>

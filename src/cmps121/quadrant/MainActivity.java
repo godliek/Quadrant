@@ -153,6 +153,23 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here.
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			//Start up settings
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
+			return true;
+		} else if (id == R.id.action_history) {
+			Intent intent = new Intent(this, MapActivity.class);
+			startActivity(intent);
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 
     @Override
     protected void onResume() {
@@ -275,26 +292,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
  	    });
  	    builder.create().show();
  	}
-    
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			//Start up settings
-			Intent intent = new Intent(this, SettingsActivity.class);
-			startActivity(intent);
-			return true;
-		} else if (id == R.id.action_history) {
-			Intent intent = new Intent(this, HistoryActivity.class);
-			//intent.putExtra("tripHistory", tripHistory.toString());
-			startActivity(intent);
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
     
     // attempt to bind to MyService
     private void bindMyService() {
@@ -420,6 +417,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		//update state, button
     		activityState = STATE_IDLE;
     		recordButton.setBackgroundResource(R.drawable.rec_button);
+    		
     		//stop counting
     		timerHandler.removeCallbacks(timerRunnable);
     		elapsedTime = 0;
