@@ -146,29 +146,11 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         typeSpinner.setOnItemSelectedListener(this);
         typeAdapter.notifyDataSetChanged();
         
-        
- 		XYSeries series = new XYSeries("Elevation Over Time");
- 		
- 		// cant get from an array if its empty or crash
-        if (savedTrips.size() > 0) {
-	 		GPSEntry g = savedTrips.get(0);
-	 		
-	 		JSONArray jArr = g.data;
-	 		for(int i = 0; i < jArr.length(); i++) {
-	 			try {
-					JSONObject jObj = jArr.getJSONObject(i);
-					Log.d("testData", "" + i + ": " + jObj.getString("elev"));
-					series.add(i, Double.parseDouble(jObj.getString("elev")));
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
-	 		}
-        }
+
  		mRenderer.setXTitle("Time");
         mRenderer.setYTitle("Elevation (ft)");
  		
- 		mDataset.addSeries(series);
+
  		mCurrentRenderer = new XYSeriesRenderer();
  		mCurrentRenderer.setLineWidth(5);
  		mCurrentRenderer.setColor(Color.argb(100, 18, 179, 12));
@@ -176,31 +158,24 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		
  		layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
  		
- 		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
- 		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 	}
 	
    
 	@Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-		
-		// crash app...
-		if (savedTrips.size() == 0) return;
-		
 		Log.d(LOG_TAG, "spinner entry selected");
-		//Clear graph data
-		mDataset.clear();
-		
-		//Get index of selected items
-		Log.d("trip spinner", "Trip Index Selected: " + tripSpinner.getSelectedItemPosition());
-		GPSEntry g = savedTrips.get(tripSpinner.getSelectedItemPosition());
-		Log.d("type spinner","Graph Index Selected: " + typeSpinner.getSelectedItemPosition());
-		String graphType = typeSpinner.getSelectedItem().toString();
-		XYSeries series = new XYSeries(graphType);
-		
-		
-		
-		//Generate new graph
+
+		//Make sure there is information to display before creating a graph.
+		if(savedTrips.size() != 0) {
+			//Clear graph data
+			mDataset.clear();
+			Log.d("trip spinner", "Trip Index Selected: " + tripSpinner.getSelectedItemPosition());
+			GPSEntry g = savedTrips.get(tripSpinner.getSelectedItemPosition());
+			Log.d("type spinner","Graph Index Selected: " + typeSpinner.getSelectedItemPosition());
+			String graphType = typeSpinner.getSelectedItem().toString();
+			XYSeries series = new XYSeries(graphType);
+
+			//Generate new graph
 			JSONArray jArr = g.data;
 			Log.d("testData", jArr.toString());
 			mRenderer.setXLabels(8);
@@ -243,7 +218,8 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 	 		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
 	 		layout.removeAllViews();
 	 		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
-		} 
+		}
+	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
