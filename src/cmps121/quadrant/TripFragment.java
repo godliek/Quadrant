@@ -53,8 +53,15 @@ public class TripFragment extends Fragment implements OnItemSelectedListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
         View view  = inflater.inflate(R.layout.map_fragment, container, false);
-        
-        savedTrips = new ArrayList<GPSEntry>();
+
+        return view;
+    }
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		
+		savedTrips = new ArrayList<GPSEntry>();
         // initialize class members
      	mPrefs = getActivity().getSharedPreferences("quadrant", Context.MODE_PRIVATE);
 
@@ -88,15 +95,13 @@ public class TripFragment extends Fragment implements OnItemSelectedListener {
         setUpMapIfNeeded();
  		
  		// setup spinner
-        Spinner mySpinner = (Spinner) view.findViewById(R.id.trip_spinner);
+        Spinner mySpinner = (Spinner) getView().findViewById(R.id.trip_spinner);
         ArrayAdapter<GPSEntry> adapter = new ArrayAdapter<GPSEntry>(getActivity(), android.R.layout.simple_spinner_item, savedTrips);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mySpinner.setAdapter(adapter); 
         mySpinner.setOnItemSelectedListener(this);
         adapter.notifyDataSetChanged();
-        
-        return view;
-    }
+	}
 	
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.

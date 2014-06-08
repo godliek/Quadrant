@@ -65,10 +65,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     // Persistent data
     private SharedPreferences mPrefs;
     
-    //Stored JSON data
-    final private String fileName = "TRIPDATA.TXT";
-    private JSONArray tripHistory;
-    
     //runs without a timer by reposting this handler at the end of the runnable
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -105,9 +101,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
         velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
     	recordButton = (Button) findViewById(R.id.button_record);
-    	
-    	tripHistory = new JSONArray();
-    	
+    
     	// restore persistent data
     	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
     	timerStartTime = mPrefs.getLong("timerStartTime", 0);
@@ -115,36 +109,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	activityState = mPrefs.getInt("activityState", STATE_IDLE);
     	elapsedTime = mPrefs.getLong("elapsedTime", 0);
     	
-    	//try to load data from file
-    	Log.d("load","trying to load file");
-    	StringBuffer datax = new StringBuffer("");
-    	try {
-			FileInputStream fis = openFileInput(fileName);
-            InputStreamReader isr = new InputStreamReader(fis) ;
-            BufferedReader buffreader = new BufferedReader(isr) ;
-
-            String readString = buffreader.readLine ( ) ;
-            while ( readString != null ) {
-                datax.append(readString);
-                readString = buffreader.readLine ( ) ;
-            }
-			fis.close();
-		} catch (FileNotFoundException e) {
-			Log.d(LOG_TAG, e.toString());
-		} catch (IOException e) {
-			Log.d(LOG_TAG, e.toString());
-		}
-
-    	Log.d("opening file", datax.toString());
-    	
-    	try {
-			tripHistory = new JSONArray(datax.toString());
-			SharedPreferences.Editor ed = mPrefs.edit();
-			ed.putString("TRIPDATA", datax.toString());
-			ed.commit();
-		} catch (JSONException e) {
-			Log.d(LOG_TAG, e.toString());
-		}
     }
     
     @Override
@@ -411,62 +375,44 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     public void clickFinish(View v) {
     	
     	if (activityState != STATE_IDLE) {
-	    	//Reset clock
+	    	// reset clock
     		timerElapsedTime = 0;
     		
-    		//update state, button
+    		// update state, button
     		activityState = STATE_IDLE;
-    		recordButton.setBackgroundResource(R.drawable.rec_button);
+    		recordButton.setBackgroundResource(R.drawable.record_button);
     		
-    		//stop counting
+    		// stop counting
     		timerHandler.removeCallbacks(timerRunnable);
     		elapsedTime = 0;
     		
+    		// save data from the service
     		JSONArray j = myService.getData();
-    		Log.d("JSON DATA", j.toString());
-    		
-    		JSONArray tripData = new JSONArray();
-    		try {
-				tripData = new JSONArray(mPrefs.getString("TRIPDATA", "[]"));
-			} catch (JSONException e1) {
-				Log.d(LOG_TAG, e1.toString());
-			}
-    		
-    		if(!j.toString().equals("[]"))
-    			tripData.put(j);
-    		
-    		Log.d("JSON DATA", tripHistory.toString());
-    		SharedPreferences.Editor ed = mPrefs.edit();
-    		
-    		ed.remove("TRIPDATA");
-    		ed.putString("TRIPDATA", tripData.toString());
-    		ed.commit();
-    		
-    		FileOutputStream fos;
-			try {
-				fos = openFileOutput(fileName, Context.MODE_PRIVATE);
-	    		fos.write(tripData.toString().getBytes());
-	    		fos.close();
-	    		showToast("Trip Saved!");
-			} catch (FileNotFoundException e) {
-				Log.d(LOG_TAG, e.toString());
-			} catch (IOException e) {
-				Log.d(LOG_TAG, e.toString());
-			}
+    		if (j != null) {
+        		Log.d("JSON DATA", j.toString());
+        		saveSingleTrip(j);
+    		} else {
+    			showToast("No data! Trip discarded.");
+    		}
 
     		// stop the service
 	    	if (serviceBound) {
-	        	if (myService != null) {
-	        		myService.removeResultCallback(this);
-	        	}
-	    		Log.d("GPSService", "Unbinding");
-	    		unbindService(serviceConnection);
-	        	serviceBound = false;
-	
-	        	Log.d(LOG_TAG, "Stopping GPS Service.");
-	        	Intent intent = new Intent(this, GPSService.class);
-	        	stopService(intent);
-	        	Log.d(LOG_TAG, "Stopped GPS Service.");
+	    		try {
+		        	if (myService != null) {
+		        		myService.removeResultCallback(this);
+		        	}
+		    		Log.d("GPSService", "Unbinding");
+		    		unbindService(serviceConnection);
+		        	serviceBound = false;
+		
+		        	Log.d(LOG_TAG, "Stopping GPS Service.");
+		        	Intent intent = new Intent(this, GPSService.class);
+		        	stopService(intent);
+		        	Log.d(LOG_TAG, "Stopped GPS Service.");
+	        	
+	    		} catch (Exception e) {
+	    			Log.d(LOG_TAG, "ERROR stopping service: " + e.toString());
+	    		}
 	        }
     	} else {
     		showToast("You're not recording.  Doh!");
@@ -479,6 +425,29 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 
     	toast = Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT);
     	toast.show();
+    }
+    
+    /** write a new trip to the preferences */
+    private void saveSingleTrip(JSONArray jArray) {
+    	if (mPrefs == null) {
+    		mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
+    	}
+    	try {
+			JSONArray tripData = new JSONArray(mPrefs.getString("TRIPDATA", "[]"));
+			
+    		if(jArray.toString().equals("[]")) {
+    			Log.d(LOG_TAG, "Saving first trip string to prefs...");
+    		}
+    		tripData.put(jArray);
+    		// save persistent data
+            SharedPreferences.Editor ed = mPrefs.edit();
+            ed.putString("TRIPDATA", tripData.toString());
+            ed.commit();
+    		Log.d(LOG_TAG, "Saved trip data: " + tripData.toString());
+    		showToast("Trip Saved!");
+		} catch (JSONException e1) {
+			Log.d(LOG_TAG, e1.toString());
+		}
     }
 
 }
