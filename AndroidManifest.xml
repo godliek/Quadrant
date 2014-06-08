@@ -32,23 +32,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="cmps121.quadrant.HistoryActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="@string/title_activity_history"
-            android:parentActivityName="cmps121.quadrant.MainActivity" >
-        </activity>
-        <activity
-            android:name="cmps121.quadrant.ViewTripActivity"
-            android:label="@string/title_activity_view_trip" >
-        </activity>
+
+
         <activity
             android:name="cmps121.quadrant.SettingsActivity"
             android:label="@string/title_activity_view_trip" >
-        </activity>
-        <activity
-            android:name="cmps121.quadrant.ViewStatsActivity"
-            android:label="@string/title_activity_view_stats" >
         </activity>
 
         <service
@@ -60,13 +48,15 @@
         <!-- Goolge Maps API Key -->
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBJg9OIR9GvvcEcPxloDcw8O0IEFXcZeKo" />
+            android:value="AIzaSyCOZVdJgWFL4lpf9j79rMdYzGM8f-gy-Nk" />
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
         <activity
             android:name="cmps121.quadrant.MapActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_map" >
         </activity>
     </application>
