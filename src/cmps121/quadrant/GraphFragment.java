@@ -4,10 +4,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
+import org.achartengine.model.SeriesSelection;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -38,15 +38,15 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 	//Graph Items
 	/** The main dataset that includes all the series that go into a chart. */
 	private XYMultipleSeriesDataset mDataset = new XYMultipleSeriesDataset();
+	private XYSeries mCurrentSeries;
 	/** The main renderer that includes all the renderers customizing a chart. */
 	private XYMultipleSeriesRenderer mRenderer = new XYMultipleSeriesRenderer();
-	/** The most recently added series. */
-	private XYSeries mCurrentSeries;
 	/** The most recently created renderer, customizing the current series. */
 	private XYSeriesRenderer mCurrentRenderer;
 	/** The chart view that displays the data. */
 	private GraphicalView mChartView;
 	
+	//Layout that will contain the graph when drawn
 	private LinearLayout layout;
 	
 	private static final String LOG_TAG = "GraphFragment";
@@ -55,6 +55,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 
 	protected static ArrayList<GPSEntry> savedTrips;
 	
+	//Spinners to hold the different trips and choose the type of graph
 	private Spinner tripSpinner;
 	private Spinner typeSpinner;
 	
@@ -92,15 +93,11 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         mRenderer.setPanEnabled(false, false);
         mRenderer.setShowGrid(true);
         
- 
-
-        List<Double> elevations = new ArrayList<Double>();
  		try {
  			String data = mPrefs.getString("TRIPDATA", "[]");
  			JSONArray tripData = new JSONArray(data);
  			Log.d("JSON", tripData.toString());
  			for(int i = 0; i < tripData.length(); i++) {
- 				Log.d("loop", "trying to add item to listview");
  				JSONArray jArr = (JSONArray) tripData.get(i);
  				if(!jArr.toString().equals("[]")) {
  					GPSEntry g = new GPSEntry(jArr);
@@ -108,15 +105,11 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  					//Get time of first GPS data in JSON array
  					JSONObject jObj = (JSONObject) jArr.get(0);
  					
- 					//get elevation
- 					double elev = Double.parseDouble(jObj.getString("elev"));
- 					elevations.add(elev);
  					//Maybe use time in graph later
  					String time = jObj.getString("time");
  					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
  					String dateStarted = formatter.format(new Date(Long.parseLong(time)));
  				
- 					
  					g.titleText = dateStarted;
  					savedTrips.add(g);
  				}
@@ -124,7 +117,6 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		} catch (JSONException e) {
  			e.printStackTrace();
  		}
- 		Collections.reverse(elevations);
  		Collections.reverse(savedTrips);	//Reverse the list; it is in the order in which the records were saved(newest last)
  		
  		//Set up spinner items for trips
@@ -157,7 +149,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
  		mRenderer.addSeriesRenderer(mCurrentRenderer);
  		
  		layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
- 		
+ 		Log.d(LOG_TAG,"onstart finished");
 	}
 	
    
@@ -214,7 +206,9 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 				}
 	 			
 	 		}
+	 		mCurrentSeries = series;
 	 		mDataset.addSeries(series);
+		    Log.d("LOG_TAG", "" + mDataset.getSeriesCount() + " " + mRenderer.getSeriesRendererCount());
 	 		mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
 	 		layout.removeAllViews();
 	 		layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
@@ -226,6 +220,48 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	  @Override
+	public void onSaveInstanceState(Bundle outState) {
+		Log.d(LOG_TAG, "onSaveInstanceState called");
+	    super.onSaveInstanceState(outState);
+	    // save the current data, for instance when changing screen orientation
+	    mRenderer.removeAllRenderers();
+	    outState.putSerializable("dataset", mDataset);
+	    outState.putSerializable("renderer", mRenderer);
+	    outState.putSerializable("current_series", mCurrentSeries);
+	    outState.putSerializable("current_renderer", mCurrentRenderer);
+	  }
+
+	  
+	  @Override
+	  public void onActivityCreated(Bundle savedInstanceState) {
+	  super.onActivityCreated(savedInstanceState);
+	  Log.d(LOG_TAG, "onActivityCreated called");
+	  if (savedInstanceState != null) {
+		  Log.d(LOG_TAG, "onactivitycreated instance is not null");
+	          // Restore last state for checked position.
+	        mDataset = (XYMultipleSeriesDataset) savedInstanceState.getSerializable("dataset");
+	  	    mRenderer = (XYMultipleSeriesRenderer) savedInstanceState.getSerializable("renderer");
+	  	    mCurrentSeries = (XYSeries) savedInstanceState.getSerializable("current_series");
+	  	    mCurrentRenderer = (XYSeriesRenderer) savedInstanceState.getSerializable("current_renderer");
+	  	    
+		    if (mChartView == null) {
+			      LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.graphLayout);
+			      mDataset.addSeries(mCurrentSeries);
+			      mChartView = ChartFactory.getLineChartView(getActivity(), mDataset, mRenderer);
+			      // enable the chart click events
+			      mRenderer.setClickEnabled(true);
+			      mRenderer.setSelectableBuffer(10);
+			      layout.removeAllViews();
+			      layout.addView(mChartView, new LayoutParams(LayoutParams.FILL_PARENT,
+			          LayoutParams.FILL_PARENT));
+			      boolean enabled = mDataset.getSeriesCount() > 0;
+			    } else {
+			      mChartView.repaint();
+			    }
+	      }
+	  }
 
 	/** GPSEntry
 	 *    ListView element

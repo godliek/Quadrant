@@ -79,16 +79,6 @@ public class MapActivity extends FragmentActivity {
         actionBar.addTab(actionBar.newTab().setText("Details").setTabListener(tabListener));
         
     }
-    
-
-    /** A simple fragment that displays a TextView. */
-    public static class TextFragment extends Fragment {
-      @Override
-      public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle) {
-        return inflater.inflate(R.layout.text_fragment, container, false);
-      }
-    }
-   
 
     /** A simple FragmentPagerAdapter that returns a SupportMapFragment and a TextFragment. */
     public static class PagerAdapter extends FragmentPagerAdapter {
