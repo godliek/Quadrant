@@ -193,8 +193,8 @@
         <Button
             android:id="@+id/button_finish"
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="73dp"
-            android:layout_height="30dp"
+            android:layout_width="85dp"
+            android:layout_height="35dp"
             android:layout_alignBaseline="@+id/button_record"
             android:layout_alignBottom="@+id/button_record"
             android:layout_marginLeft="10dp"
