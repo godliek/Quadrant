@@ -9,6 +9,7 @@
     android:orientation="vertical"
     tools:context="cmps121.quadrant.MainActivity" >
 
+
     <LinearLayout
         android:id="@+id/LinearLayout2"
         android:layout_width="match_parent"
@@ -22,19 +23,19 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:padding="5dp" >
 
             <TextView
-                android:id="@+id/textView_distanceLabel"
+                android:id="@+id/TextView01"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Distance"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#ff737373" />
+                android:textColor="#ffd3d3d3" />
 
             <FrameLayout
                 android:id="@+id/frameLayout2"
-                android:layout_width="80dp"
+                android:layout_width="85dp"
                 android:layout_height="22dp"
                 android:layout_marginBottom="49dp"
                 android:background="@drawable/text_border" >
@@ -48,6 +49,7 @@
                     android:layout_gravity="left"
                     android:gravity="left"
                     android:text="0.00"
+                    android:textColor="#ffffffff"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
                 
                 <TextView
@@ -57,6 +59,7 @@
                     android:layout_marginTop="4dp"
                     android:layout_gravity="right"
                     android:gravity="right"
+                    android:textColor="#ffdddddd"
                     android:text="mi"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </FrameLayout>
@@ -67,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:padding="5dp" >
 
             <TextView
                 android:id="@+id/textView_elevationLabel"
@@ -75,11 +78,11 @@
                 android:layout_height="wrap_content"
                 android:text="Speed"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#ff737373" />
+                android:textColor="#ffd3d3d3" />
 
             <FrameLayout
                 android:id="@+id/frameLayout3"
-                android:layout_width="80dp"
+                android:layout_width="85dp"
                 android:layout_height="22dp"
                 android:background="@drawable/text_border" >
 
@@ -90,6 +93,7 @@
                     android:layout_marginLeft="4dp"
                     android:layout_marginTop="4dp"
                     android:text="0.00"
+                    android:textColor="#ffffffff"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
                 <TextView
                     android:layout_width="wrap_content"
@@ -98,6 +102,7 @@
                     android:layout_marginTop="4dp"
                     android:layout_gravity="right"
                     android:gravity="right"
+                    android:textColor="#ffdddddd"
                     android:text="mph"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </FrameLayout>
@@ -108,7 +113,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="10dp" >
+            android:padding="5dp" >
 
             <TextView
                 android:id="@+id/textView_speedLabel"
@@ -116,11 +121,11 @@
                 android:layout_height="wrap_content"
                 android:text="Elevation Δ"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#ff737373" />
+                android:textColor="#ffd3d3d3" />
 
             <FrameLayout
                 android:id="@+id/frameLayout3"
-                android:layout_width="80dp"
+                android:layout_width="85dp"
                 android:layout_height="22dp"
                 android:background="@drawable/text_border" >
 
@@ -131,6 +136,7 @@
                     android:layout_marginLeft="4dp"
                     android:layout_marginTop="4dp"
                     android:text="0.00"
+                    android:textColor="#ffffffff"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
                 <TextView
                     android:layout_width="wrap_content"
@@ -139,6 +145,7 @@
                     android:layout_marginTop="4dp"
                     android:layout_gravity="right"
                     android:gravity="right"
+                    android:textColor="#ffdddddd"
                     android:text="ft"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
             </FrameLayout>
@@ -168,24 +175,44 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="50dp"
             android:text="00:00:00"
-            android:textColor="#ff737373"
+            android:textColor="#fff3f3f3"
             android:textSize="50sp" />
+        
+        <Button
+            android:id="@+id/rec_led"
+            android:layout_width="83dp"
+            android:layout_height="20dp"
+            android:layout_alignBaseline="@+id/button_record"
+            android:layout_alignBottom="@+id/button_record"
+            android:layout_toLeftOf="@+id/button_record"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/clear_background" />
 
         <Button
             android:id="@+id/button_finish"
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="60dp"
+            android:layout_width="73dp"
             android:layout_height="30dp"
             android:layout_alignBaseline="@+id/button_record"
             android:layout_alignBottom="@+id/button_record"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@+id/button_record"
-            android:background="@drawable/button"
+            android:background="@drawable/finish_button"
             android:onClick="clickFinish"
-            android:text="Finish"
             android:textColor="#ffffffff" />
+
+        <TextView
+            android:id="@+id/timeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView_timer"
+            android:layout_centerHorizontal="true"
+            android:text="Elapsed Time"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#ffd3d3d3" />
+
 
     </RelativeLayout>
 

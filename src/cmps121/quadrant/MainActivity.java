@@ -45,6 +45,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     
     // State
     private int activityState = STATE_IDLE;
+    private boolean firstApplicationUse = false;
     
     // Notification
     private static Toast toast;
@@ -94,13 +95,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         distanceTextView = (TextView) findViewById(R.id.textView_distanceValue);
         velocityTextView = (TextView) findViewById(R.id.textView_speedValue);
     	recordButton = (Button) findViewById(R.id.button_record);
-    
-    	// restore persistent data
-    	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
-    	timerStartTime = mPrefs.getLong("timerStartTime", 0);
-    	timerElapsedTime = mPrefs.getLong("timerElapsedTime", 0);
-    	activityState = mPrefs.getInt("activityState", STATE_IDLE);
-    	elapsedTime = mPrefs.getLong("elapsedTime", 0);
     	
     }
     
@@ -124,16 +118,26 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 			Intent intent = new Intent(this, MapActivity.class);
 			startActivity(intent);
 			return true;
+		} else if (id == R.id.action_help) {
+			displayHelpDialog();
+			return true;
 		}
+		
+		
 		return super.onOptionsItemSelected(item);
 	}
 
     @Override
     protected void onResume() {
         super.onResume();   
-        if (!serviceBound && activityState != STATE_IDLE) {
-	    	bindMyService();
-        }
+        
+    	// restore persistent data
+    	mPrefs = getSharedPreferences("quadrant", MODE_PRIVATE);
+    	timerStartTime = mPrefs.getLong("timerStartTime", 0);
+    	timerElapsedTime = mPrefs.getLong("timerElapsedTime", 0);
+    	activityState = mPrefs.getInt("activityState", STATE_IDLE);
+    	elapsedTime = mPrefs.getLong("elapsedTime", 0);
+    	firstApplicationUse = mPrefs.getBoolean("firstApplicationUse", true);
         
         // check if the device has a GPS module
         PackageManager pm = getPackageManager();
@@ -141,17 +145,39 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         
     	if (hasGPS) {
     		// prompt to enable GPS if necessary
-    		promptEnableGPS();
+    		displayEnableGPS();
     	} else {
     		// The device doesn't support GPS (exit)
-    		notifyDeviceIncompatible();
+    		displayDeviceIncompatible();
     	}
+    	
+    	// display a help dialog for first time users
+    	if (firstApplicationUse) {
+    		firstApplicationUse = false;
+    		SharedPreferences.Editor ed = mPrefs.edit();
+    		ed.putBoolean("firstApplicationUse", firstApplicationUse);
+    		ed.commit();
+    		
+    		displayHelpDialog();
+    	}
+    	
+        // bind to GPS Service
+        if (!serviceBound && activityState != STATE_IDLE) {
+	    	bindMyService();
+        }
         
         // restore GUI
     	TextView tv = (TextView) findViewById(R.id.textView_timer);
+    	Button finishButton = (Button) findViewById(R.id.button_finish);
+    	Button recordLed = (Button) findViewById(R.id.rec_led);
     	if (activityState == STATE_IDLE) {
     		//restore timer
     		tv.setText("00:00:00");
+    		
+    		// setup GUI status and button state
+    		finishButton.setBackgroundResource(R.drawable.finish_gray);
+    		recordLed.setBackgroundResource(R.drawable.clear_background);
+    		
     	} else if(activityState == STATE_RECORDING) {
     		// restore timer
             int seconds = (int) (timerElapsedTime / 1000);
@@ -162,6 +188,11 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             tv.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
             // resume timer
     		timerHandler.postDelayed(timerRunnable, 0);
+    		
+    		// setup GUI status and button state
+    		finishButton.setBackgroundResource(R.drawable.finish_button);
+    		recordLed.setBackgroundResource(R.drawable.record_led);
+    		
     	} else if (activityState == STATE_PAUSED) {
     		// restore timer
             int seconds = (int) (timerElapsedTime / 1000);
@@ -170,11 +201,14 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
             seconds = seconds % 60;
             minutes = minutes % 60;
             tv.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
-
+            
+    		// setup GUI status and button state
+    		finishButton.setBackgroundResource(R.drawable.finish_button);
+    		recordLed.setBackgroundResource(R.drawable.paused_led);
     	}
     }
-    
-    @Override
+
+	@Override
     protected void onPause() {
         super.onPause();
         if (serviceBound) {
@@ -191,8 +225,11 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
         		Intent intent = new Intent(this, GPSService.class);
         		stopService(intent);
         		Log.d(LOG_TAG, "Stopped.");
+        		
         	}
         }
+        
+    	timerHandler.removeCallbacks(timerRunnable);
         
         // save persistent data
         SharedPreferences.Editor ed = mPrefs.edit();
@@ -204,7 +241,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     }
     
  // check if GPS is available and prompt the user to enable it if needed
- 	private boolean promptEnableGPS() {
+ 	private boolean displayEnableGPS() {
  		boolean GPSEnabled = false;
  		LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
  		GPSEnabled = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -235,7 +272,7 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
  	}
  	
  	// notify the user that their device is incompatible with the Application
- 	private void notifyDeviceIncompatible() {
+ 	private void displayDeviceIncompatible() {
  		//Ask the user to enable GPS
  	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
  	    builder.setTitle("Warning");
@@ -249,6 +286,24 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
  	    });
  	    builder.create().show();
  	}
+ 	
+    private void displayHelpDialog() {
+ 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+ 	    builder.setTitle("Welcome!");
+ 	    builder.setMessage("Instructions:\n"
+ 	    		+ "1) To start recording your location simply hit big shiny button and get going somewhere!\n\n"
+ 	    		+ "2) When you're done, press the \"FINISH\" button and your activity will automatically be saved.\n\n"
+ 	    		+ "3) To see all the data about your past activities press the \"HISTORY\" button on the "
+ 	    		+ "top-right corner of your screen.\n\nThanks for using Quadrant!\n"
+ 	    		+ "(This message will only appear once)");
+ 	    builder.setNegativeButton("Let's Go", new DialogInterface.OnClickListener() {
+ 	        @Override
+ 	        public void onClick(DialogInterface dialog, int which) {
+ 	        	// return
+ 	        }
+ 	    });
+ 	    builder.create().show();
+	}
     
     // attempt to bind to MyService
     private void bindMyService() {
@@ -256,7 +311,6 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     	Log.d("LOG_TAG", "Trying to bind");
     	bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
-    
 
     // Service connection code.
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -339,6 +393,13 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		timerStartTime = System.currentTimeMillis();
             timerHandler.postDelayed(timerRunnable, 0);
             
+            // set finish button pressable
+	    	Button button = (Button) findViewById(R.id.button_finish);
+			button.setBackgroundResource(R.drawable.finish_button);
+			// show recording indicator
+			button = (Button) findViewById(R.id.rec_led);
+			button.setBackgroundResource(R.drawable.record_led);
+			
         	showToast("Recording");
     	} else if (activityState == STATE_RECORDING) {
     		activityState = STATE_PAUSED;
@@ -348,6 +409,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		timerHandler.removeCallbacks(timerRunnable);
     		//Pause service
     		myService.setServiceRunning(false);
+    		
+			// hide recording indicator
+			Button button = (Button) findViewById(R.id.rec_led);
+			button.setBackgroundResource(R.drawable.paused_led);
     		
         	showToast("Paused");
     	} else if (activityState == STATE_PAUSED) {
@@ -359,6 +424,10 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
     		
     		//Resume service
     		myService.setServiceRunning(true);
+    		
+			// show recording indicator
+			Button button = (Button) findViewById(R.id.rec_led);
+			button.setBackgroundResource(R.drawable.record_led);
     		
             // notify resumed
         	showToast("Resumed");
@@ -407,6 +476,14 @@ public class MainActivity extends Activity implements GPSServiceTask.ResultCallb
 	    			Log.d(LOG_TAG, "ERROR stopping service: " + e.toString());
 	    		}
 	        }
+	    	
+	    	// show grayed out finish button
+	    	Button button = (Button) findViewById(R.id.button_finish);
+			button.setBackgroundResource(R.drawable.finish_gray);
+			
+			// hide recording indicator
+			button = (Button) findViewById(R.id.rec_led);
+			button.setBackgroundResource(R.drawable.clear_background);
     	} else {
     		showToast("You're not recording.  Doh!");
     	}

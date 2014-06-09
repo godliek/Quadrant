@@ -26,14 +26,4 @@
             android:minWidth="100dp" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/record_led"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/record_led" />
-
 </RelativeLayout>
