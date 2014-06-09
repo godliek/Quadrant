@@ -140,7 +140,7 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
         
 
  		mRenderer.setXTitle("Time");
-        mRenderer.setYTitle("Elevation (ft)");
+        mRenderer.setYTitle("Elevation (m)");
  		
 
  		mCurrentRenderer = new XYSeriesRenderer();
@@ -181,14 +181,14 @@ public class GraphFragment extends Fragment implements OnItemSelectedListener {
 						graphData = Double.parseDouble(jObj.getString("elev"));
 						series.add(time, graphData);
 						mRenderer.setXTitle("Time (s)");
-				        mRenderer.setYTitle("Elevation (ft)");
+				        mRenderer.setYTitle("Elevation (m)");
 					} else {
 						if(graphType.equals("Total Elevation Gain Over Time")) {
 							Log.d("testData", "" + i + ": " + jObj.getString("totalElev"));
 							graphData = Double.parseDouble(jObj.getString("totalElev"));
 							series.add(time, graphData);
 							mRenderer.setXTitle("Time (s)");
-					        mRenderer.setYTitle("Total Elevation Gain(ft)");
+					        mRenderer.setYTitle("Total Elevation Gain(m)");
 						} else {
 							if(graphType.equals("Distance Over Time")) {
 								Log.d("testData", "" + i + ": " + jObj.getString("totalDistance"));
